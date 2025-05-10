@@ -1,0 +1,154 @@
+{{define "Head"}}
+    <title>Recherche</title>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<style>
+@import "/static/etablishment_card.css";
+#map{
+  /* configure the size of the map */
+  height: 200px;
+  z-index: 0;
+  margin-block: .5rem;
+  border-radius: 10px;
+}
+#map *{
+    color: black;
+}
+.searchZoneBtn{
+      position: absolute;
+      top: 4.5rem;
+      left: 15%;
+      width: 70%;
+      height: 2rem;
+      background-color: white;
+      border-radius: 25px;
+      color: black;
+}
+.etablishment{
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    .card{
+        border-radius: 10px;
+        background-color: var(--card-color);
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px 0 rgba(85, 85, 85, 0.6), 0 1px 2px 0 rgba(85, 85, 85, 0.9);
+        width: 324px;
+        flex-grow: 1;
+        .core{
+            padding: 10px 15px;
+            display: block;
+            .content{
+                display: flex;
+                gap: .5rem;
+                align-items: center;
+                .categoryIcon{
+                    height: 2.5rem;
+                    aspect-ratio: 1/1;
+                }
+                .name{
+                    font-size: 1.1rem;
+                }
+                .rating{
+                    display: flex;
+                    gap: .3rem;
+                    .star{
+                        height: 1.5rem;
+                        aspect-ratio: 1/1;
+                    }
+                }
+            }
+            .metadata{
+                display: flex;
+                gap: .5rem;
+                margin-bottom: .5rem;
+                .icon{
+                    height: 1.3rem;
+                    aspect-ratio: 1/1;
+                }
+            }
+        }
+        .footer{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding: 10px 15px;
+            .share{
+                display: flex;
+                gap: .5rem;
+                align-items: center;
+                .share-group{
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    padding: .5rem;
+                    aspect-ratio: 1/1;
+                    cursor: pointer;
+                    .icon{
+                        width: 1.5rem;
+                        aspect-ratio: 1/1;
+                    }
+                }
+                .instagram{
+                    background-color: rgba(237,12,155,.2);
+                    &:hover{
+                        background-color: rgba(237,12,155,.3);
+                    }
+                }
+                .favorite{
+                    &:hover{
+                        background-color: var(--hover-color);
+                    }
+                }
+            }
+            .appointmentBtn{
+                padding-inline: 1rem;
+                font-weight: 500;
+                border-radius: 5px;
+                line-height: 2.5rem;
+                display: flex;
+                gap: .5rem;
+                .icon{
+                    width: 1.5rem;
+                    aspect-ratio: 1/1;
+                }
+            }
+        }
+    }
+}
+</style>
+{{end}}
+
+{{define "Body"}}
+    <div id="map"></div>
+    <button type="button" onclick="onSearchZone()" class="searchZoneBtn">Recherche dans la zone</button>
+    <div class="etablishment">
+        {{range .Etablishment}}
+            {{template "EtablishmentCard" .}}
+        {{end}}
+    </div>
+    <script>
+        // initialize Leaflet
+        var map = L.map('map').setView([{{with $v := index .Etablishment 0 }}{{$v.Lat}}, {{$v.Lon}}{{end}}], 14);
+        // add the OpenStreetMap tiles
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+        }).addTo(map);
+
+        {{range .Etablishment}}
+            L.marker([{{.Lat}},{{.Lon}}]).addTo(map).bindPopup("Marker popup");
+        {{end}}
+
+        const onSearchZone = ()=>{
+            console.log(map.getCenter())
+        }
+
+    </script>
+{{end}}

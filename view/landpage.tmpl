@@ -1,0 +1,35 @@
+{{define "Head"}}
+<title>Mota</title>
+<link href="/static/appointment.css" rel="stylesheet" />
+<style>
+@import "/static/etablishment_card.css";
+.container{
+    max-width: 1000px;
+    margin-inline: auto;
+    .header{
+        margin-block: 1rem;
+        font-size: 1.2rem;
+    }
+    .etablishment{
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+}
+</style>
+{{end}}
+
+{{define "Body"}}
+<div class="container">
+    {{if .NextAppointment.Id}}
+        <h1 class="header">Rendez-vous</h1>
+        {{template "AppointmentCard" .NextAppointment}}
+    {{end}}
+    <h1 class="header">Pour vous</h1>
+    <div class="etablishment">
+        {{range .Etablishments}}
+            {{template "EtablishmentCard" .}}
+        {{end}}
+    </div>
+</div>
+{{end}}

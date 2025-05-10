@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/static/htmx.js"></script>
+        <link href="/static/global.css" rel="stylesheet" />
+        <link rel="icon" type="image/png" href="/static/logo.png">
+        {{template "Head" .}}
+    </head>
+    <body>
+        <div id="notification" class="hidden"></div>
+        <nav>
+            <a href="/">
+                <svg viewBox="0 0 8.466666 8.466667" class="logo">
+                  <g transform="translate(-41.087104,-65.712803)">
+                    <g transform="translate(0.50008655,0.72031784)">
+                      <rect
+                         style="fill:var(--primary-color);fill-opacity:1;stroke:none;stroke-width:0.209081;stroke-opacity:1"
+                         width="2.5291483"
+                         height="7.9374995"
+                         x="42.065014"
+                         y="65.257065"
+                         ry="1.2645742" />
+                      <rect
+                         style="fill:var(--primary-color);fill-opacity:1;stroke:none;stroke-width:0.165298;stroke-opacity:1"
+                         width="2.5291483"
+                         height="4.9612474"
+                         x="45.046543"
+                         y="65.257065"
+                         ry="1.2645742" />
+                      <ellipse
+                         style="fill:#808080;fill-opacity:1;stroke:none;stroke-width:0.161146;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+                         cx="46.311115"
+                         cy="71.915245"
+                         rx="1.2645248"
+                         ry="1.2793219" />
+                    </g>
+                  </g>
+                </svg>
+            </a>
+            <div class="navigation">
+              <button type="button" class="searchBtn btn-outline" popovertarget="search">
+                  <svg viewBox="0 0 25.129072 33.866664" class="icon">
+                    <g transform="translate(-107.7328,-125.01428)">
+                      <g transform="matrix(0.40809017,0,0,0.40809017,64.553385,75.055514)">
+                        <circle
+                           style="fill:none;stroke:var(--text-color);stroke-width:8;stroke-dasharray:none;stroke-opacity:1"
+                           cx="135.84032"
+                           cy="153.1218"
+                           r="26.123138" />
+                        <rect
+                           style="fill:var(--text-color);fill-opacity:1;stroke:none;stroke-width:8;stroke-dasharray:none"
+                           width="8"
+                           height="32.648464"
+                           x="39.146881"
+                           y="224.89351"
+                           ry="1.7766132"
+                           transform="rotate(-30)" />
+                      </g>
+                    </g>
+                  </svg>
+              </button>
+              {{if .User.Employee}}
+                <div class="custom-select">
+                    <select id="employee" name="employeeId">
+                        <option value="Hello">Test boutique</option>
+                        <option value="3432323">Gringo style</option>
+                    </select>
+                    <span class="arrow"></span>
+                </div>
+              {{end}}
+              {{if .User.Id}}
+                  <button type="button" popovertarget="navigation" class="user">
+                        {{if .User.Picture}} 
+                            <img src="{{.User.Picture}}" class="picture" />
+                        {{else}}
+                            <b class="picture">{{.User.ShortName}}</b>
+                        {{end}}
+                      <div id="navigation" popover>
+                          <a href="/compte" class="command">Compte</a>
+                          {{if .User.Employee}}<a href="/planning" class="command">Planning</a>{{end}}
+                          <a href="/rendez-vous" class="command">Mes Rendez-vous</a>
+                          {{if .User.Etablishment}}<a href="/etablissement" class="command">Mes Etablissement</a>{{end}}
+                          <div hx-delete="/connexion" hx-trigger="click" class="command">Deconnexion</div>
+                      </div>
+                      <span class="arrow"></span>
+                  </button>
+              {{else}}
+                  <a href="/connexion" class="signBtn">Connexion</a>
+              {{end}}
+            </div>
+            <form id="search" popover action="/recherche" method="GET">
+                <div class="field">
+                    <input type="text" name="query" placeholder="Coiffeur" class="input" autocomplete="off" required />
+                    <div style="position: relative;display: flex;align-items: center;">
+                        <input type="text" id="s-location" name="location" placeholder="Adresse" class="input" autocomplete="off" required 
+                        oninput="onFetchAddr(this, document.getElementById('suggest-addr'), 's-location')" />
+                        <input type="text" name="lon" id="s-lon" style="display: none;" />
+                        <input type="text" name="lat" id="s-lat" style="display: none;" />
+                        <button type="button" class="my-position">
+                            <svg class="icon" viewBox="-4 0 32 32" >
+                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <g transform="translate(-104.000000, -411.000000)" fill="var(--text-color)">
+                                        <path d="M116,426 C114.343,426 113,424.657 113,423 C113,421.343 114.343,420 116,420 C117.657,420 119,421.343 119,423 C119,424.657 117.657,426 116,426 L116,426 Z M116,418 C113.239,418 111,420.238 111,423 C111,425.762 113.239,428 116,428 C118.761,428 121,425.762 121,423 C121,420.238 118.761,418 116,418 L116,418 Z M116,440 C114.337,440.009 106,427.181 106,423 C106,417.478 110.477,413 116,413 C121.523,413 126,417.478 126,423 C126,427.125 117.637,440.009 116,440 L116,440 Z M116,411 C109.373,411 104,416.373 104,423 C104,428.018 114.005,443.011 116,443 C117.964,443.011 128,427.95 128,423 C128,416.373 122.627,411 116,411 L116,411 Z" id="location" sketch:type="MSShapeGroup">
+                            
+                            </path>
+                                    </g>
+                                </g>
+                            </svg>
+                        </button>
+                    </div>
+                    <input type="submit" class="hidden" />
+                </div>
+                <div id="suggest-addr"></div>
+            </form>
+        </nav>
+        <main>
+          {{template "Body" .}}
+        </main>
+        <script>
+          document.addEventListener("DOMContentLoaded", ()=>{
+
+
+            })
+
+
+              const onSelectedAdr = (ele, displayContainer, inputAdr, inputLon = undefined, inputLat = undefined, inputPostal = undefined)=>{
+                  inputLon == "undefined" ? null : document.getElementById(inputLon).value = ele.dataset.lon
+                  inputLat == "undefined" ? null :  document.getElementById(inputLat).value = ele.dataset.lat
+                  inputPostal == "undefined" ? null : document.getElementById(inputPostal).value = ele.dataset.postal
+                  document.getElementById(inputAdr).value = ele.dataset.name
+                  document.getElementById(displayContainer).innerHTML = null
+              }
+
+              let timeout
+              const onFetchAddr = (ele, displayContainer, inputAdrId, inputLatId, inputLonId, inputPostalId)=>{
+                  clearTimeout(timeout)
+                  timeout = setTimeout(async ()=>{
+                      const fetchAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${ele.value}&limit=5`)
+                      const addrJson = await fetchAddr.json()
+                      if(!addrJson.features) return
+                      displayContainer.innerHTML = ""
+                      for(const addr of addrJson.features){
+                          const [lon, lat] = addr.geometry.coordinates
+                          displayContainer.innerHTML += `<button type="button" class="suggest" 
+                          onclick="onSelectedAdr(this, '${displayContainer.id}', '${inputAdrId}', '${inputLonId}', '${inputLatId}', '${inputPostalId}')" 
+                          data-lat="${lat}" data-lon="${lon}" data-name="${addr.properties.name}" data-postal="${addr.properties.postcode}">${addr.properties.label}</button>`
+                      }
+                  }, 1500)
+              }
+        </script>
+  </body>
+</html>

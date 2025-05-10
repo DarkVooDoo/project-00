@@ -1,0 +1,212 @@
+{{define "Head"}}
+    <title>Compte</title>
+    <style>
+        #user{
+            max-width: 1000px;
+            background-color: var(--card-color);
+            border-radius: .5rem;
+            margin: 1rem auto;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            .header{
+                border-bottom: 1px solid var(--border-color);
+                padding: 15px;
+                .name{
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                }
+                .helper{
+                    font-size: .9rem;
+                }
+            }
+            #picture-form{
+                margin: 15px 15px 0px 15px;
+                position: relative;
+                display: flex;
+                gap: .5rem;
+                .label{
+                    border-radius: 50%;
+                    aspect-ratio: 1/1;
+                    outline: 1px solid var(--border-color);
+                    width: 5rem;
+                }
+                .display{
+                    width: 100%;
+                    height: 100%;
+                }
+                .proBtn{
+                    line-height: 2rem;
+                    padding-inline: 1rem;
+                    border-radius: 5px;
+                    background-color: var(--primary-color);
+                    font-weight: bold;
+                    color: white;
+                }
+            }
+            #information-form{
+                padding: 15px;
+            }
+        }
+        .field{
+            margin-bottom: .5rem;
+            .label{
+                display: block;
+                font-weight: bold;
+                margin-bottom: .3rem;
+            }
+            .input{
+                width: 100%;
+                height: 2rem;
+                border-radius: 5px;
+                padding-inline: 5px;
+            }
+        }
+        .addr{
+            position: relative;
+            display: flex;
+            gap: .5rem;
+            .locations{
+                display: none;
+                position: absolute;
+                top: 4rem;
+                left: 0;
+                width: 100%;
+                padding: 5px;
+                border-radius: 5px;
+                border: 1px solid var(--border-color);
+                background-color: var(--border-color);
+                z-index: 1;
+                &:hover{
+                    display: block;
+                }
+                .locationBtn{
+                    display: block;
+                    width: 100%;
+                    text-align: start;
+                    line-height: 2rem;
+                }
+            }
+            &:has(.input:focus) .locations{
+                display: block;
+            }
+            .addr-field{
+                width: calc(100% - 5rem);
+                position: relative;
+                .input{
+                    padding-right: 2.1rem;
+                }
+                .deleteBtn{
+                    position: absolute;
+                    right: 0px;
+                    bottom: 0px;
+                    height: 2rem;
+                    aspect-ratio: 1/1;
+                    font-weight: bold;
+                    color: #bd2c2c;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+            }
+            .postal-field{
+                width: 5rem;
+            }
+        }
+        .submitBtn{
+            height: 2.5rem;
+            padding-inline: 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+{{end}}
+
+{{define "Body"}}
+    <div id="user">
+        <div class="header">
+            <h1 class="name">Information Personnelle</h1>
+            <p class="helper">Modifier les information personnelle de votre compte</p>
+        </div>
+        <form hx-patch="/compte" id="picture-form" hx-encoding="multipart/form-data" hx-trigger="change" hx-target="#picture + .label" >
+            <input type="file" id="picture" name="picture" style="display:none;" accept="image/*" />
+            <label for="picture" class="label"> 
+                {{if .Profile.Picture}}<img src="{{.Profile.Picture}}" class="display" />{{end}}
+            </label>
+            <div>
+                <p>Creer le: {{.Profile.Joined}}</p>
+                <p>{{.Profile.Email}}</p>
+                <button type="button" class="proBtn">Devenir Pro</button>
+            </div>
+        </form>
+        <form hx-post="/compte" id="information-form" hx-swap="none" hx-ext="json-enc-custom">
+            <div class="field">
+                <label class="label" for="lastname">Nom</label>
+                <input type="text" name="lastname" id="lastname" class="input" value="{{.Profile.Lastname}}" autocomplete="off" />
+            </div>
+            <div class="field">
+                <label class="label" for="firstname">Prenom</label>
+                <input type="text" name="firstname" id="firstname" class="input" value="{{.Profile.Firstname}}" autocomplete="off" />
+            </div>
+            <div class="field">
+                <label class="label" for="phone">Telephon</label>
+                <input type="text" name="phone" id="phone" class="input" value="{{.Profile.Phone}}" autocomplete="off" />
+            </div>
+            <div class="addr">
+                <div class="field addr-field">
+                    <label class="label" for="town">Commune</label>
+                    <input type="text" name="town" id="town" class="input" autocomplete="off" value="{{.Profile.Town}}" oninput="onTownSuggest(this)"/>
+                    <button type="button" class="deleteBtn" onclick="onDeletePosition()">X</button>
+                </div>
+                <div class="field postal-field">
+                    <label class="label" for="postal">Postal</label>
+                    <input type="number" id="postal" name="postal" class="input" autocomplete="off" value="{{.Profile.Postal}}" />
+                </div>
+                <input type="text" id="lon" name="lon" class="hidden" value="{{.Profile.Lon}}" />
+                <input type="text" id="lat" name="lat" class="hidden" value="{{.Profile.Lat}}" />
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+                <button type="submit" class="submitBtn btn-primary">Sauvegarder</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        let timer
+        const myLocation = document.querySelector(".addr")
+        const town = document.getElementById("town")
+        const postal = document.getElementById("postal")
+        const lon = document.getElementById("lon")
+        const lat = document.getElementById("lat")
+
+        const onDeletePosition = ()=>{
+            town.value = ""
+            postal.value = ""
+            lon.value = ""
+            lat.value = ""
+        }
+
+        const onTownSuggest = async()=>{
+            clearTimeout(timer)
+            timer = setTimeout(async ()=>{
+                const fetchMunicipality = await fetch(`https://api-adresse.data.gouv.fr/search/?q=ivry&type=municipality`)
+                const municipalityJson = await fetchMunicipality.json()
+
+                const suggest = document.createElement("div")
+                suggest.classList.add("locations")
+                for (const m of municipalityJson.features){
+                    const [lon, lat] = m.geometry.coordinates
+                    const {municipality, postcode} = m.properties
+                    suggest.innerHTML += `<button type="button" class="locationBtn" data-lat="${lat}" data-lon="${lon}"  onclick="onTownSelected(this)">${municipality}, ${postcode}</button>`
+                }
+                myLocation.insertAdjacentElement("beforeend", suggest)
+            }, 1250)
+        }
+        const onTownSelected = (ele)=>{
+            const [municipality, postcode] = ele.innerHTML.split(",")
+            town.value = municipality
+            postal.value = postcode.trim()
+            console.log(ele.dataset.lat)
+            lat.value = ele.dataset.lat
+            lon.value = ele.dataset.lon
+            ele.closest("div").remove()
+        }
+    </script>
+{{end}}

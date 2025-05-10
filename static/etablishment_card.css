@@ -1,0 +1,89 @@
+.card{
+    border-radius: 10px;
+    background-color: var(--card-color);
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(85, 85, 85, 0.6), 0 1px 2px 0 rgba(85, 85, 85, 0.9);
+    width: 324px;
+    flex-grow: 1;
+    .core{
+        padding: 10px 15px;
+        display: block;
+        .content{
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            .categoryIcon{
+                height: 2.5rem;
+                aspect-ratio: 1/1;
+            }
+            .name{
+                font-size: 1.1rem;
+            }
+            .rating{
+                display: flex;
+                gap: .3rem;
+                .star{
+                    height: 1.5rem;
+                    aspect-ratio: 1/1;
+                }
+            }
+        }
+        .metadata{
+            display: flex;
+            gap: .5rem;
+            margin-bottom: .5rem;
+            .icon{
+                height: 1.3rem;
+                aspect-ratio: 1/1;
+            }
+        }
+    }
+    .footer{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border-color);
+        padding: 10px 15px;
+        .share{
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            .share-group{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                padding: .5rem;
+                aspect-ratio: 1/1;
+                cursor: pointer;
+                .icon{
+                    width: 1.5rem;
+                    aspect-ratio: 1/1;
+                }
+            }
+            .instagram{
+                background-color: rgba(237,12,155,.2);
+                &:hover{
+                    background-color: rgba(237,12,155,.3);
+                }
+            }
+            .favorite{
+                &:hover{
+                    background-color: var(--hover-color);
+                }
+            }
+        }
+        .appointmentBtn{
+            padding-inline: 1rem;
+            font-weight: 500;
+            border-radius: 5px;
+            line-height: 2.5rem;
+            display: flex;
+            gap: .5rem;
+            .icon{
+                width: 1.5rem;
+                aspect-ratio: 1/1;
+            }
+        }
+    }
+}
