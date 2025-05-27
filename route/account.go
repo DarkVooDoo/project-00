@@ -9,6 +9,7 @@ import (
 
 type Account struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Profile model.User
 }
 
@@ -31,8 +32,11 @@ func (a Account) Get(w http.ResponseWriter, r *http.Request){
         w.Header().Add("Location", "/")
         w.WriteHeader(http.StatusTemporaryRedirect)
     }
+	conn := model.GetDBPoolConn()
+	defer conn.Close()
+	a.Navbar = model.GetNavbarFromCache(conn, a.User)
     var user = model.User{Id: a.User.Id}
-    if err := user.Profile(); err != nil{
+    if err := user.Profile(conn); err != nil{
         w.Header().Add("Location", "/")
         w.WriteHeader(http.StatusTemporaryRedirect)
     }

@@ -11,6 +11,7 @@
     --border-color: #C9C9C9;
     --hover-color: #e7e7e7;
     --input-color: #e7e7e7;
+    --button-bg-disabled: #e9e9e9;
     --warning-btn-color: #ef4444;
     --warning-btn-color-hover: #dc2626;
     --etablishment-appointment-color: #FFC629;
@@ -20,12 +21,12 @@
 
     --success-color: #35b14a;
 
-    --success-bg: #cce1cf;
-    --success-fg: #356a36;
+    --success-bg: #6fff83;
+    --success-fg: #076d01;
     --warning-bg: oklch(0.94 0.05 53.1);
     --warning-fg: oklch(0.68 0.12 55.15);
-    --error-bg: oklch(0.91 0.06 18.31);
-    --error-fg: #9B2127;
+    --error-bg: #ff646b;
+    --error-fg: #690000;
 }
 
 @media (prefers-color-scheme: dark) { 
@@ -35,6 +36,7 @@
         --card-color: #181818;
         --border-color: #2b2b2b;
         --hover-color: #2b2929;
+        --button-bg-disabled: #2d2d2d
     }
     input, textarea, select {
         color-scheme: dark;
@@ -43,7 +45,8 @@
 
 *{
     margin: 0;
-    border: 0;
+    padding: 0;
+    border: none;
     box-sizing: border-box;
     font-family: "Atkinson Hyperlegible Next", serif;
     font-size: 14px;
@@ -93,8 +96,11 @@ main{
         width: 1.5rem;
         aspect-ratio: 1/1;
     }
-    .title{
+    .n-title{
         font-size: 1.1rem;
+    }
+    .n-msg, .n-title{
+        color: black;
     }
 }
 
@@ -156,6 +162,155 @@ nav{
                 transform: rotate(-135deg);
             }
         }
+
+        .menu[open]{
+            transform: translateX(0px);
+            &::backdrop{
+                background-color: rgba(0,0,0,.4);
+                backdrop-filter: blur(2px);
+            }
+        } 
+        .menu{
+            position: fixed;
+            display: block;
+            min-height: 100%;
+            width: 300px;
+            inset: unset;
+            right: 0px;
+            top: 0px;
+            border: none;
+            border-radius: 10px 0px 0px 10px;
+            transform: translateX(300px);
+            transition: 
+            transform 500ms cubic-bezier(.27,.28,.09,.99), 
+            display 500ms linear allow-discrete, 
+            overlay 500ms linear allow-discrete;
+            background-color: var(--card-color);
+            &::backdrop{
+                background-color: rgba(0,0,0,0);
+                transition: 
+                background-color 500ms,
+                display 500ms linear allow-discrete,
+                overlay 500ms linear allow-discrete;
+            }
+            .menu-header{
+                padding: 15px;
+                display: grid;
+                grid-template-columns: .2fr 1fr .2fr;
+                gap: .5rem;
+                .user-photo{
+                    height: 2.5rem;
+                    aspect-ratio: 1/1;
+                    border-radius: 50%;
+                    background-color: purple;
+                }
+                #closeMenu{
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    height: 2.5rem;
+                    border: none;
+                    outline: none;
+                    &::after{
+                        position: absolute;
+                        content: "";
+                        width: 1.25rem;
+                        height: 3px;
+                        background-color: var(--text-color);
+                        rotate: 135deg;
+                    }
+                    &::before{
+                        position: absolute;
+                        content: "";
+                        width: 1.25rem;
+                        height: 3px;
+                        background-color: var(--text-color);
+                        rotate: 45deg;
+                    }
+                }
+            }
+            .navigate{
+                border-bottom: 1px solid var(--border-color);
+                .nav-path{
+                    display: flex;
+                    align-items: center;
+                    gap: .5rem;
+                    line-height: 2.5rem;
+                    padding-inline: 15px;
+                    cursor: pointer;
+                    .icon{
+                        height: 1.5rem;
+                        aspect-ratio: 1/1;
+                    }
+                }
+            }  
+            .sub-section{
+                border-bottom: 1px solid var(--border-color);
+                .sub-header{
+                    color: #BDBDBD;
+                    padding: 10px 15px;
+                    font-size: 1.2rem;
+                }
+                .employeeSwitch{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 5px 15px;
+                    width: 100%;
+                    border: none;
+                    background-color: transparent;
+                    line-height: 2rem;
+                    text-align: start;
+                    cursor: pointer;
+                    transition: background-color 200ms linear;
+                    &:hover{
+                        background-color: var(--hover-color);
+                    }
+                }
+                .employeeSwitch.current{
+                    &::after{
+                        position: relative;
+                        content: "";
+                        width: 10px;
+                        height: 10px;
+                        display: block;
+                        border-radius: 50%;
+                        background-color: var(--primary-color);
+                    }
+                }
+                .sub-btn{
+                    display: block;
+                    border-radius: 5px;
+                    padding: 5px 1rem;
+                    width: calc(100% - 30px);
+                    font-weight: 500;
+                    margin: 0rem auto .5rem;
+                }
+            }
+            .logoutBtn{
+                width: calc(100% - 30px);
+                margin: .5rem auto;
+                padding: 5px 10px;
+                border-radius: 5px;
+                display: flex;
+                gap: .5rem;
+                font-weight: 500;
+                .icon{
+                    height: 1.5rem;
+                    aspect-ratio: 1/1;
+                }
+            }
+        }
+        @starting-style{
+            .menu[open]{
+                transform: translateX(300px);
+                &::backdrop{
+                    background-color: rgba(0,0,0,0);
+                }
+            }
+        }
         .user{
             border-radius: 5px;
             outline: 1px solid var(--border-color);
@@ -183,40 +338,6 @@ nav{
             }
             #navigation:popover-open + .arrow{
                 transform: rotate(-135deg);
-            }
-            #navigation{
-                position: absolute;
-                inset: unset;
-                right: 10px;
-                top: 4.2rem;
-                display: flex;
-                flex-direction: column;
-                border-radius: 5px;
-                padding: 0;
-                margin: 0;
-                background-color: var(--card-color);
-                outline: 2px solid var(--border-color);
-                transition: all .25s linear allow-discrete;
-                pointer-events: none;
-                opacity: 0;
-                .command{
-                    line-height: 2rem;
-                    padding-inline: 10px;
-                    &:hover{
-                        background-color: var(--border-color);
-                    }
-                }
-                &:popover-open{
-                    opacity: 1;
-                    pointer-events: all;
-                    @starting-style{
-                        opacity: 0;
-                    }
-                }
-                &::backdrop{
-                    backdrop-filter: blur(0px);
-                    background-color: transparent;
-                }
             }
         }
     }
@@ -359,7 +480,7 @@ input[type=number] {
 }
 
 input:focus, textarea:focus, select:focus{
-    outline-color: var(--primary-color);
+    outline-color: var(--primary-color) !important;
     box-shadow: 0 0 2px 2px rgb(38 36 243 / 65%);
 }
 

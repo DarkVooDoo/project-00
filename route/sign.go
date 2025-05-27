@@ -40,12 +40,13 @@ func (s Sign) Post(w http.ResponseWriter, r *http.Request){
     email := r.FormValue("email")
     password := r.FormValue("password")
     
-    var user model.UserClaim
-    if err := user.Sign(email, password); err != nil{
+    var user model.User
+	err := user.Sign(email, password)
+	if err != nil{
         w.WriteHeader(http.StatusForbidden)
         return
     }
-    err := model.CreateAccessToken(user.Id, user.ShortName, user.Picture,  user.Etablishment, user.Employee, w)
+    err = model.CreateAccessToken(user.Id, user.ShortName, user.Picture,  user.EtablishmentId, user.EmployeeId, w)
     if err != nil{
         w.WriteHeader(http.StatusForbidden)
         return
@@ -56,19 +57,19 @@ func (s Sign) Post(w http.ResponseWriter, r *http.Request){
 func (s Sign) Put(w http.ResponseWriter, r *http.Request){
     var user model.User
     if err := ReadJsonBody(r.Body, &user); err != nil{
+		DisplayNotification(Notitification{"Error", "Requete echoué payload malformed", "error"}, w)
         return
     }
     if user.Confirmation != user.Password || !isStrongPassword(user.Password){
-        w.WriteHeader(http.StatusBadRequest)
+		DisplayNotification(Notitification{"Error", "Requete echoué", "error"}, w)
         return
     }
     if err := user.Create(); err != nil{
-        w.WriteHeader(http.StatusForbidden)
+		DisplayNotification(Notitification{"Reussi", "Requete echoué", "error"}, w)
         return
     }
+	DisplayNotification(Notitification{"Reussi", "Utilisateur creé", "success"}, w)
     w.WriteHeader(http.StatusOK)
-
-
 }
 
 func (s Sign) Delete(w http.ResponseWriter, r *http.Request){

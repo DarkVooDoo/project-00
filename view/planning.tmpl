@@ -47,7 +47,8 @@
             .dayBtn{
                 padding: 10px;
                 border: none;
-                background-color: transparent;
+                outline: none;
+                border-radius: 50%;
             }
             .dayBtn[disabled]{
                 color: var(--border-color);
@@ -55,7 +56,6 @@
             .dayBtn.selected{
                 background-color: var(--primary-color);   
                 color: white;
-                border-radius: 50%;
                 transition: background-color .4s linear;
                 @starting-style{
                   background-color: white;
@@ -72,7 +72,7 @@
     #schedule{
         margin-inline: calc(10px + 10px);
         .card{
-            --card-height: 240px;
+            --card-height: 232px;
             position: relative;
             margin: 0 auto;
             border-radius: 10px;
@@ -102,14 +102,36 @@
             }
             .footer{
                 display: flex;
-                justify-content: space-evenly;
-                padding-block: 10px;
-                border-top: 1px solid var(--border-color);
+                overflow: hidden;
+                border-bottom-right-radius: 10px;
+                border-bottom-left-radius: 10px;
                 .footerBtn{
-                    line-height: 2.5rem;
-                    padding-inline: 1rem;
-                    border-radius: 25px;
+                    display: block;
+                    width: 100%;
+                    padding-block: 15px;
+                    border-top: 1px solid var(--border-color);
+                    outline: none;
+                    font-weight: 600;
                     cursor: pointer;
+                    transition: all 200ms linear;
+                    text-align: center;
+                    &:nth-child(2){
+                        border-left: 1px solid var(--border-color);
+                    }
+                }
+                .deleteBtn{
+                    color: var(--warning-btn-color);
+                    &:hover{
+                        background-color: var(--warning-btn-color);
+                        color: white;
+                    }
+                }
+                .updateBtn{
+                    color: var(--primary-color);
+                    &:hover{
+                        color: white;
+                        background-color: var(--primary-color);
+                    }
                 }
             }
             &:after{
@@ -309,7 +331,7 @@ margin: auto;
                         <h1>{{.Contact}}</h1>
                     </div>
                     <div class="client-group">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                         </svg>
                         <div>
@@ -318,7 +340,7 @@ margin: auto;
                         </div>
                     </div>
                     <div class="client-group">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                           <line x1="16" y1="2" x2="16" y2="6"></line>
                           <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -332,10 +354,10 @@ margin: auto;
                   </div>
                   <div class="footer">
                     {{if eq .Status "Happend"}}
-                        <button type="button" class="footerBtn">Reserve a nouveau</button>
+                        <a href="/etablissement/{{.EtablishmentId}}/rendez-vous/nouveau?s={{.ServiceTook}}" class="footerBtn btn-outline">Reserve a nouveau</a>
                     {{else if eq .Status "Next"}}
-                        <button type="button" class="footerBtn btn-danger" onclick="onCancelAppointment({{.Id}})">Annuler</button>
-                        <button type="button" class="footerBtn btn-primary">Modifier</button>
+                        <button type="button" class="footerBtn deleteBtn" onclick="onCancelAppointment({{.Id}})">Annuler</button>
+                        <a href="/rendez-vous/{{.Id}}" class="footerBtn updateBtn">Modifier</a>
                     {{else}}
                         <h2 class="nowText">Maintenant</h2>
                     {{end}}
@@ -344,7 +366,7 @@ margin: auto;
             {{else}}
                 <div class="offday">
                     <div class="date-display" id="current-date">{{.Today}}</div>
-                    <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                       <line x1="16" y1="2" x2="16" y2="6"></line>
                       <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -423,7 +445,7 @@ margin: auto;
             date.setDate(date.getDate() - startOfTheWeek)
             days.innerHTML = ""
             for(let i = 0; i < arrayOfDays.length; i++){
-                days.innerHTML += `<button type="button" class="dayBtn ${selectedDate.getMonth() === date.getMonth() && selectedDate.getDate() === date.getDate() && 'selected'}" ${date.getMonth() !== currentMonth ? 'disabled' : ''} onclick="onDaySelect(this)" hx-post="/planning" hx-target="#schedule" hx-ext="json-enc-custom" hx-include="#date" hx-vals='{"employee": "1"}'>${date.getDate()}</button>`
+                days.innerHTML += `<button type="button" class="dayBtn btn-outline ${selectedDate.getMonth() === date.getMonth() && selectedDate.getDate() === date.getDate() && 'selected'}" ${date.getMonth() !== currentMonth ? 'disabled' : ''} onclick="onDaySelect(this)" hx-post="/planning" hx-target="#schedule" hx-ext="json-enc-custom" hx-include="#date">${date.getDate()}</button>`
                 date.setDate(date.getDate() + 1)
             }
             htmx.process(document.body)

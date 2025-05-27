@@ -6,17 +6,18 @@ import (
 	"log"
 	"net/http"
 	"planify/model"
+	"strconv"
 	"strings"
 )
 
-type EmployeeRoute struct{
+type EtablishmentEmployeeRoute struct{
     Week []string
     EmployeeList  []model.Employe
 }
 
-var EmployeHandler http.Handler = EmployeeRoute{}
+var EtablishmentEmployeHandler http.Handler = EtablishmentEmployeeRoute{}
 
-func (e EmployeeRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
+func (e EtablishmentEmployeeRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
     switch r.Method{
         case http.MethodDelete:
             e.Delete(w, r)
@@ -31,20 +32,17 @@ func (e EmployeeRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
     }
 }
 
-func (e EmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
+func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
 
     var user model.UserClaim
-    VerifyToken(r, w, &user)
-
+	if err := VerifyToken(r, w, &user); err != nil{
+		w.Header().Add("HX-Redirect", "/")
+		return
+	}
     conn := model.GetDBPoolConn()
     defer conn.Close()
 
-    etablishmentCookie, err := r.Cookie("eid")
-    if err != nil{
-        log.Printf("no etablishment cookie send")
-        return
-    }
-    employe := model.Employe{EtablishmentId: etablishmentCookie.Value}
+    employe := model.Employe{EtablishmentId: user.Etablishment}
     e.Week = []string{"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"}
     e.EmployeeList = employe.GetEtablishmentEmployees(conn)
     temp, err := template.New("employe").Parse(`
@@ -122,16 +120,16 @@ func (e EmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
     }
 }
 
-func (e EmployeeRoute) Put(w http.ResponseWriter, r *http.Request){
+func (e EtablishmentEmployeeRoute) Put(w http.ResponseWriter, r *http.Request){
     if r.FormValue("email") == ""{
         return
     }
-    entrepriseId, err := r.Cookie("eid")
-    if err != nil{
-        DisplayNotification(Notitification{"Error", "etablissement inconnu", "error"}, w)
-        return
-    }
-    employee := model.Employe{Email: r.FormValue("email"), EtablishmentId: entrepriseId.Value}
+	var user model.UserClaim
+	if err := VerifyToken(r, w, &user); err != nil{
+		log.Printf("error verifying token: %s", err)
+		return
+	}
+    employee := model.Employe{Email: r.FormValue("email"), EtablishmentId: user.Etablishment}
     employeeList := employee.SuggestEmployee()
     if len(employeeList) > 0{
         temp, err := template.New("suggest").Parse(`
@@ -154,7 +152,7 @@ func (e EmployeeRoute) Put(w http.ResponseWriter, r *http.Request){
     w.WriteHeader(http.StatusNoContent)
 }
 
-func (e EmployeeRoute) Patch(w http.ResponseWriter, r *http.Request){
+func (e EtablishmentEmployeeRoute) Patch(w http.ResponseWriter, r *http.Request){
 
     var schedule model.SchedulePayload
     var employe model.Employe
@@ -169,14 +167,19 @@ func (e EmployeeRoute) Patch(w http.ResponseWriter, r *http.Request){
     DisplayNotification(Notitification{"Success", "requete reussi", "success"}, w)
 }
 
-func (e EmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
-    entrepriseId, err := r.Cookie("e_id")
-    if err != nil{
-        DisplayNotification(Notitification{"Error", "etablissement inconnu", "error"}, w)
-        return
-    }
-    employee := model.Employe{UserId: r.FormValue("id"), EtablishmentId: entrepriseId.Value}
-    if err = employee.New(); err != nil{
+func (e EtablishmentEmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
+	var user model.UserClaim
+	if err := VerifyToken(r, w, &user); err != nil{
+        DisplayNotification(Notitification{"Error", "Requete echoué", "error"}, w)
+		return
+	}
+	id, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil{
+		log.Printf("error converting the id to integer: %s", err)
+		return
+	}
+    employee := model.Employe{UserId: id, EtablishmentId: user.Etablishment}
+	if err := employee.New(); err != nil{
         DisplayNotification(Notitification{"Error", "Requete echoué", "error"}, w)
         return
     }
@@ -231,11 +234,17 @@ func (e EmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
     DisplayNotification(Notitification{"Reussi", "Employée Ajouté", "success"}, w)
 }
 
-func (e EmployeeRoute) Delete(w http.ResponseWriter, r *http.Request){
+func (e EtablishmentEmployeeRoute) Delete(w http.ResponseWriter, r *http.Request){
+	var user model.UserClaim
+	if err := VerifyToken(r, w, &user); err != nil{
+		log.Printf("error in the token")
+		return
+	}
     body, _ := io.ReadAll(r.Body)
     value := strings.Split(string(body), "=")
-    employee := model.Employe{Id: value[1]}
-    if employee.Id == ""{
+	id, _ := strconv.Atoi(value[1])
+    employee := model.Employe{Id: id, EtablishmentId: user.Etablishment}
+    if employee.Id == 0{
         DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w) 
         return
     }

@@ -11,16 +11,16 @@ import (
 )
 
 type UserClaim struct{
-    Id string `json:"id"`
+    Id int `json:"id,string"`
     ShortName string `json:"short_name"`
     Picture string `json:"picture"`
-    Etablishment bool
-    Employee bool
+    Etablishment int
+    Employee int
     jwt.RegisteredClaims
 }
 
 type User struct{
-    Id string
+    Id int
     Town string `json:"town"`
     Postal string `json:"postal"`
     Lat string `json:"lat"`
@@ -28,18 +28,22 @@ type User struct{
     Phone string `json:"phone"`
     Email string `json:"email"`
     Password string `json:"password"`
-    Picture string
-    Joined string
     Firstname string `json:"firstname"`
     Lastname string `json:"lastname"`
     Confirmation string `json:"confirmation"`
+	Salt int
+    Picture string
+    Joined string
+	ShortName string
+    EtablishmentId int
+    EmployeeId int
 }
 
 const (
     ACCESS_TOKEN_EXPIRE = time.Hour * 24 * 3
 )
 
-func CreateAccessToken(id string, shortname string, picture string, etablishment bool, employee bool, w http.ResponseWriter) error{
+func CreateAccessToken(id int, shortname string, picture string, etablishment int, employee int, w http.ResponseWriter) error{
     claim := UserClaim{
         id,
         shortname,

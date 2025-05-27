@@ -1,13 +1,14 @@
 package route
 
-import "net/http"
+import (
+	"net/http"
+)
 
-type EtablishmentEmployeRoute struct{
+type EmployeRoute struct{
     
 }
 
-var EtablishmentEmployeHandler http.Handler = EtablishmentRoute{}
+var EmployeHandler http.Handler = EmployeRoute{}
 
-func (ee EtablishmentEmployeRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
-
+func (ee EmployeRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
 }

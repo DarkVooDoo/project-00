@@ -10,14 +10,22 @@ import (
 	"math/rand"
 	"mime/multipart"
 	"os"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+type CacheNavbar struct{
+	Name string
+	Email string
+	Employee []KeyValue
+	Etablishment []KeyValue
+}
+
+var navbarCache = make(map[int]CacheNavbar)
 
 func (u *User) Create() error{
-    var salt int
     conn := GetDBPoolConn()
     defer conn.Close()
     cryptPassword, salt := cryptPassword(u.Password)
@@ -33,7 +41,7 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
     _, err := S3Client().PutObject(context.Background(), &s3.PutObjectInput{
         Bucket: aws.String("rdv-da"),
         ContentType: aws.String(contentType),
-        Key: aws.String(u.Id),
+        Key: aws.String(string(u.Id)),
         Body: file,
     })
     if err != nil{
@@ -56,10 +64,8 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
     return nil
 }
 
-func (u *User) Profile()error{
+func (u *User) Profile(conn *sql.Conn)error{
     var town, postal, phone, lat, lon, picture sql.NullString
-    conn := GetDBPoolConn()
-    defer conn.Close()
     profileRow := conn.QueryRowContext(context.Background(), `SELECT firstname, lastname, email, town, postal, latitude, longitude, phone, picture, TO_CHAR(created_at, 'DD TMMonth YYYY') 
     FROM users WHERE id=$1`, u.Id)
     if err := profileRow.Scan(&u.Firstname, &u.Lastname, &u.Email, &town, &postal, &lat, &lon, &phone, &picture, &u.Joined); err != nil{
@@ -78,7 +84,6 @@ func (u *User) Profile()error{
 func (u *User) Modify()error{
     conn := GetDBPoolConn()
     defer conn.Close()
-    log.Print(u.Lat, u.Lon)
     modifyProfile, err := conn.ExecContext(context.Background(), `UPDATE users SET firstname=$1, lastname=$2, town=$3, postal=$4, phone=$5, latitude=$6, longitude=$7 WHERE id=$8`, 
     u.Firstname, u.Lastname, u.Town, u.Postal, u.Phone, u.Lat, u.Lon, u.Id)
     if err != nil{
@@ -93,29 +98,26 @@ func (u *User) Modify()error{
     return nil
 }
 
-func (u *User) Get(email string, password string)error{
-    conn := GetDBPoolConn()
-    defer conn.Close()
-    userRow := conn.QueryRowContext(context.Background(), `SELECT firstname || ' ' || lastname FROM users WHERE email=$1`, email)
-    if err := userRow.Scan(&u.Firstname, &u.Lastname); err != nil{
-        log.Printf("error scanning user: %s", err)
-        return errors.New("error selecting user")
-    }
-    log.Println(u.Firstname)
-    return nil
-}
+func (u *User) Sign(email string, password string)(error){
 
-func (u *UserClaim) Sign(email string, password string)error{
-    var picture sql.NullString
     conn := GetDBPoolConn()
     defer conn.Close()
     userRow := conn.QueryRowContext(context.Background(), `SELECT * FROM SignUser($1)`, email)
-    if err := userRow.Scan(&u.Id, &u.ShortName, &picture, &u.Employee, &u.Etablishment); err != nil{
+    if err := userRow.Scan(&u.Id, &u.ShortName, &u.Picture, &u.EmployeeId, &u.EtablishmentId, &u.Salt, &u.Password); err != nil{
         log.Printf("error scanning user: %s", err)
         return errors.New("error selecting user")
     }
-    u.Picture = picture.String
+	//cryptedPassword := verifyPassword(password, u.Salt)
+	//if cryptedPassword != u.Password{
+	//	log.Printf("error no the same password: DB: %v \tCrypted password: %v", u.Password, cryptedPassword)
+	//	return errors.New("error no the same password")
+	//}
     return nil
+}
+
+func verifyPassword(password string, salt int) string{
+    cypher := sha256.Sum256([]byte(fmt.Sprintf("%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY"))))
+    return fmt.Sprintf("%x", cypher)
 }
 
 func cryptPassword(password string)(cryptPassword string, salt int){
@@ -123,4 +125,48 @@ func cryptPassword(password string)(cryptPassword string, salt int){
     cypher := sha256.Sum256([]byte(fmt.Sprintf("%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY"))))
     cryptPassword = fmt.Sprintf("%x", cypher)
     return cryptPassword, salt
+}
+
+func GetNavbarFromCache(conn *sql.Conn, u UserClaim)CacheNavbar{
+
+	if reflect.DeepEqual(navbarCache[u.Id], CacheNavbar{}){
+		return getNavbarInfo(conn, u)
+	}
+	return navbarCache[u.Id]
+}
+
+func getNavbarInfo(conn *sql.Conn, u UserClaim)CacheNavbar{
+	var navigationCache CacheNavbar
+	var valueKey KeyValue
+	if u.Employee != 0{
+		employeeIds, err := conn.QueryContext(context.Background(), `SELECT e.id, et.name FROM employee AS e LEFT JOIN etablishment AS et ON et.id=e.etablishment_id
+		WHERE e.user_id=$1`, u.Id)
+		if err != nil{
+			log.Printf("error getting employee ids: %s", err)
+		}
+		for employeeIds.Next(){
+			if err := employeeIds.Scan(&valueKey.Id, &valueKey.Value); err != nil{
+				log.Printf("error scanning the employees: %s", err)
+			}
+			navigationCache.Employee = append(navigationCache.Employee, valueKey)
+		}
+	}
+	if u.Etablishment != 0{
+		etablishmentIds, err := conn.QueryContext(context.Background(), `SELECT et.id, et.name FROM etablishment AS et WHERE et.user_id=$1`, u.Id)
+		if err != nil{
+			log.Printf("error getting employee ids: %s", err)
+		}
+		for etablishmentIds.Next(){
+			if err := etablishmentIds.Scan(&valueKey.Id, &valueKey.Value); err != nil{
+				log.Printf("error scanning the employees: %s", err)
+			}
+			navigationCache.Etablishment = append(navigationCache.Etablishment, valueKey)
+		}
+
+	}
+	user := conn.QueryRowContext(context.Background(), `SELECT firstname || ' ' || lastname, email FROM users WHERE id=$1`, u.Id)
+	if err := user.Scan(&navigationCache.Name, &navigationCache.Email); err != nil{
+		log.Printf("error getting navbar user info: %s", err)
+	}
+	return navigationCache
 }

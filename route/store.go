@@ -3,10 +3,12 @@ package route
 import (
 	"net/http"
 	"planify/model"
+	"strconv"
 )
 
 type Store struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Etablishment model.Etablishment
     DayIndex int
 }
@@ -26,10 +28,16 @@ func (s Store) ServeHTTP(w http.ResponseWriter, r *http.Request){
 }
 
 func (s Store) Get(w http.ResponseWriter, r *http.Request){
-    VerifyToken(r, w, &s.User)
-    s.Etablishment.Id = r.PathValue("id")
+	conn := model.GetDBPoolConn()
+	defer conn.Close()
+	if err := VerifyToken(r, w, &s.User); err == nil{
+		s.Navbar = model.GetNavbarFromCache(conn, s.User)
+	}
     
-    weekDay, err := s.Etablishment.Public()
+	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
+    s.Etablishment.Id = etablishmentId
+
+    weekDay, err := s.Etablishment.Public(conn)
     if err != nil{
         w.Header().Add("Location", "/")
         w.WriteHeader(http.StatusTemporaryRedirect)

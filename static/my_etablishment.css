@@ -17,35 +17,41 @@
             }
         }
         #choose-etablishment{
-            padding: 12.5px;
+            padding: 12.5px 0 0 0;
             border-radius: 10px;
             background-color: var(--card-color);
+            width: 300px;
             .text{
                 text-align: center;
                 font-size: 1.2rem;
                 margin-bottom: 1rem;
             }
             .list{
-                display: grid;
-                width: 300px;
-                gap: 1rem;
-                grid-template-columns: repeat(2, 1fr);
                 .card{
-                    width: 100%;
-                    aspect-ratio: 1/1;
-                    outline: 1px solid var(--border-color);
-                    border-radius: 5px;
-                    display: flex;
+                    display: grid;
+                    padding: 10px 15px;
+                    grid-template-columns: 1fr .1fr;
                     align-items: center;
-                    justify-content: center;
-                    flex-direction: column;
-                    .icon{
-                        width: 60px;
+                    outline: none;
+                    .checkmark{
+                        position: relative;
+                        display: block;
+                        height: 1.5rem;
+                        border-radius: 50%;
                         aspect-ratio: 1/1;
+                        outline: 1px solid darkgray;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                     }
-                }
-                .card.selected{
-                    outline: 2px solid var(--primary-color);
+                    .selected::after{
+                        content: "";
+                        position: absolute;
+                        width: calc(1.5rem - 6px);
+                        aspect-ratio: 1/1;
+                        background-color: var(--primary-color);
+                        border-radius: 50%;
+                    }
                 }
             }
         }
@@ -180,71 +186,112 @@
         }
 
         #service{
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            container: service / inline-size;
-            .newBtn{
+            .main-header{
                 display: flex;
+                justify-content: space-between;
                 align-items: center;
-                cursor: pointer;
-                justify-content: center;
-                cursor: pointer;
-            }
-            .newBtn, .service{
-                border-radius: 10px;
-                background-color: var(--card-color);
-                width: 230px;
-                cursor: pointer;
+                margin-bottom: 1rem;
+                .title{
+                    font-size: 1.5rem;
+                }
+                .newBtn{
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    outline: none;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    border-radius: 50%;
+                    &::after, &::before{
+                        content: "";
+                        position: absolute;
+                        height: 5px;
+                        width: 1.5rem;
+                        border-radius: 25px;
+                        background-color: var(--text-color);
+                    }
+                    &::before{
+                        transform: rotate(90deg);
+                    }
+                }
             }
             .service{
-                padding: 15px;
+                max-width: 1000px;
                 box-shadow: var(--card-shadow);
-                flex-grow: 1;
-                max-width: 400px;
-                @container service (max-width: 450px){
-                    width: 100%;
-                }
-                .input, .description{
-                    border-radius: 5px;
-                    margin-bottom: 1rem;
-                    display: block;
-                    padding-inline: 10px;
-                    width: 100%;
-                }
-                .description{
-                    height: 8rem;
-                    padding-block: .5rem;
-                    resize: none;
-                }
-                .input{
-                    height: 2rem;
-                }
-                .more{
-                    display: grid;
-                    justify-content: space-between;
-                    grid-template-columns: 1fr .6fr;
-                    gap: .5rem;
-                }
-                .submitBtn{
-                    padding: .5rem 1rem;
-                    border-radius: 5px;
-                }
-                .command{
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                container: large / inline-size;
+                background-color: var(--card-color);
+                .service-header{
                     display: flex;
-                    justify-content: flex-end;
-                    gap: 1rem;
-                    .btn{
-                        padding: .5rem 1rem;
-                        border-radius: 5px;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 15px;
+                    border-bottom: 1px solid var(--border-color);
+                    .header-title{
+                        font-size: 1.2rem;
+                    }
+                    .command{
                         display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        gap: .5rem;
-                        .icon{
-                            width: 1.5rem;
-                            aspect-ratio: 1/1;
+                        justify-content: flex-end;
+                        gap: 1rem;
+                        .btn{
+                            padding: .5rem 1rem;
+                            border-radius: 5px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            gap: .5rem;
+                            .icon{
+                                width: 1.5rem;
+                                aspect-ratio: 1/1;
+                            }
+                        }
+                    }
+                }
+                .body{
+                    display: flex;
+                    gap: 1rem;
+                    padding: 15px;
+                    .form-group{
+                        width: 100%;
+                        .field{
+                            width: 100%;
+                            margin-bottom: .5rem;
+                            .form-input{
+                                width: 100%;
+                                height: 1.5lh;
+                                border-radius: 5px;
+                                padding-inline: 10px;
+                                border: none;
+                                outline: 1px solid var(--border-color);
+                            }
+                        }
+                        .form-label{
+                            display: block;
+                            margin-bottom: .3rem;
+                            color: var(--text-color-helper);
+                            font-size: .9rem;
+                        }
+                        .doubleField{
+                            display: flex;
+                            gap: .5rem;
+                        }
+                        #description{
+                            width: 100%;
+                            border-radius: 5px;
+                            resize: none;
+                            height: 83%;
+                            padding: 5px;
+                        }
+                    }
+                    @container large (max-width: 600px){
+                        display: block;
+                        .form-group{
+                            #description{
+                                height: calc(3lh + 12px);
+                            }
                         }
                     }
                 }

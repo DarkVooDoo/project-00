@@ -11,14 +11,14 @@ import (
 )
 
 type Employe struct{
-    Id string
+    Id int
     Email string
     Name string `json:"name"`
     ShortName string
     Schedule EtablishmentSchedule
     Picture string
-    EtablishmentId string
-    UserId string
+    EtablishmentId int
+    UserId int
 }
 
 var logg *slog.Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -34,6 +34,22 @@ func (e *Employe) New()error{
         return errors.New("errors creating the employee")
     }
     return nil
+}
+
+func (e Employe) VerifyUserEmployee() error{
+	conn := GetDBPoolConn()
+	defer conn.Close()
+
+	var exist bool
+	employee := conn.QueryRowContext(context.Background(), `SELECT user_id=$1 FROM employee WHERE id=$2`, e.UserId, e.Id)
+	if err := employee.Scan(&exist);  err != nil{
+		log.Printf("error executing the query: %s", err)
+		return errors.New("error executing the query")
+	}
+	if !exist{
+		return errors.New("error no exist")
+	}
+	return nil
 }
 
 func (e *Employe) GetEtablishmentEmployees(conn *sql.Conn)[]Employe{

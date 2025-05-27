@@ -5,7 +5,7 @@
 
 
 {{define "Body"}}
-    {{$current := .CurrentEtablishment}}
+    {{$current := .User.Etablishment}}
     <div class="my-etablishment">
         <div class="header">
             <button type="button" popovertarget="choose-etablishment" class="switchEtablishmentBtn">Changer Etablissement</button>
@@ -13,9 +13,9 @@
                 <h1 class="text">Choisir un etablissement</h1>
                 <div class="list">
                     {{range .Etablishment}}
-                        <a href="/etablissement?etablishment={{.Id}}" class="card {{if eq $current .Id}}selected{{end}}">
-                            <img src="/static/store.svg" class="icon" />
+                        <a href="/etablissement?etablishment={{.Id}}" class="card btn-outline">
                             <p>{{.Name}}</p>
+                            <span class="checkmark {{if eq $current .Id}}selected{{end}}"></span>
                         </a>
                     {{end}}
                 </div>
@@ -38,8 +38,8 @@
 
         <div id="content">
             <div class="appointment-status">
-                <button type="button" class="appointmentBtn tab_selected" onclick="onTabClick(this)" hx-get="/etablissement/{{.CurrentEtablishment}}/rendez-vous?type=latest" hx-target="#cards">A Venir</button>
-                <button type="button" class="appointmentBtn" onclick="onTabClick(this)" hx-get="/etablissement/{{.CurrentEtablishment}}/rendez-vous?type=oldest" hx-target="#cards">Passée</button>
+                <button type="button" class="appointmentBtn tab_selected" onclick="onTabClick(this)" hx-get="/etablissement/{{.User.Etablishment}}/rendez-vous?type=latest" hx-target="#appointment-cards">A Venir</button>
+                <button type="button" class="appointmentBtn" onclick="onTabClick(this)" hx-get="/etablissement/{{.User.Etablishment}}/rendez-vous?type=oldest" hx-target="#appointment-cards">Passée</button>
             </div>
             <div id="appointment-cards">
                 {{range .Appointment}}
@@ -99,9 +99,6 @@
             }
             ele.setAttribute("data-check", "true")
         }
-        //const onEtablishmentChange = (ele)=>{
-        //    window.location.href = `/etablissement/${ele.value}`
-        //}
 
         const onDeleteShift = (ele)=>{
             const schedule = ele.closest(".day")
@@ -126,20 +123,51 @@
         }
 
         const onCreateService = (ele)=>{
-
             let newService = document.getElementById("new-service")
             if (!newService){
-                ele.insertAdjacentHTML("afterend", `
+                ele.parentElement.insertAdjacentHTML("afterend", `
                     <form class="service" id="new-service" hx-post="/etablissement/service" hx-target="#new-service" hx-swap="outerHTML" hx-ext="json-enc-custom">
-                        <input type="text" name="name" class="input" autocomplete="off" placeholder="Nom du service" />
-                        <textarea class="description" placeholder="Description" maxlength="150" name="description"></textarea>
-                        <div class="more">
-                            <input type="number" id="duration" name="duration" class="input" autocomplete="off" step="1" placeholder="Duration (Min)" />
-                            <input type="number" id="price" name="price" class="input" autocomplete="off" placeholder="Prix" />
+	                    <div class="service-header">
+	                        <h1 class="header-title">Nouveau Service</h1>
+                            <div class="command">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                        <g id="SVGRepo_iconCarrier"> 
+                                            <path d="M3 15C3 17.8284 3 19.2426 3.87868 20.1213C4.75736 21 6.17157 21 9 21H15C17.8284 21 19.2426 21 20.1213 20.1213C21 19.2426 21 17.8284 21 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path d="M12 16V3M12 3L16 7.375M12 3L8 7.375" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> 
+                                        </g>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div class="command">
-                            <button type="submit" class="submitBtn btn-primary">Creer</button>
-                        </div>
+		                <div class="body">
+		                  <div class="form-group">
+		                    <div class="field">
+		                      <label for="name" class="form-label">Nom</label>
+		                      <input type="text" name="name" class="form-input" id="name" autocomplete="off" />
+		                    </div>
+		                    <div class="field">
+		                      <label for="duration" class="form-label">Duration (min)</label>
+		                      <input type="number" name="duration" class="form-input" id="duration" autocomplete="off" />
+		                    </div>
+		                    <div class="doubleField">
+		                      <div class="field">
+		                        <label for="price" class="form-label">Prix</label>
+		                        <input type="number" name="price" class="form-input" id="price" autocomplete="off" />
+		                      </div>
+		                      <div class="field">
+		                        <label for="solde" class="form-label">Solde (%)</label>
+		                        <input type="number" name="discount" class="form-input" id="solde" max="100" />
+		                      </div>
+		                    </div>
+		                  </div>
+		                  <div class="form-group">
+		                    <label for="description" class="form-label">Description</label>
+		                    <textarea id="description" maxlength="150" name="description"></textarea>
+		                  </div>
+		                </div>
                     </form>
                 `)
                 htmx.process(document.body)

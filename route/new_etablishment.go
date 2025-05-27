@@ -8,6 +8,7 @@ import (
 
 type NewEtablishmentRoute struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Category []model.KeyValue
 
 }
@@ -15,7 +16,6 @@ type NewEtablishmentRoute struct{
 var NewEtablishmentHandler http.Handler = &NewEtablishmentRoute{}
 
 func (e NewEtablishmentRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
-
     switch r.Method{
         case http.MethodPut:
             e.Put(w, r)
@@ -25,7 +25,6 @@ func (e NewEtablishmentRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
 }
 
 func (e NewEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
-
     if err := VerifyToken(r, w, &e.User); err != nil{
         w.Header().Add("Location", "/connexion")
         w.WriteHeader(http.StatusTemporaryRedirect)
@@ -35,6 +34,7 @@ func (e NewEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
     conn := model.GetDBPoolConn()
     defer conn.Close()
 
+	e.Navbar = model.GetNavbarFromCache(conn, e.User)
     e.Category = model.Categorys(conn)
     if err := CreatePage(e, w, "view/page.html", "view/new_etablishment.tmpl"); err != nil{
         log.Println(err)

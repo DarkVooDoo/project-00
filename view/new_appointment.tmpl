@@ -135,19 +135,51 @@
                 width: 100%;
             }
             #time{
-                margin-bottom: .5rem;
+                margin-bottom: 1rem;
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 justify-content: space-between;
                 gap: .7rem;
+                &:has(> .notime){
+                    display: block;
+                }
+                .notime{
+                    width: 100%;
+                    margin-inline: auto;
+                    border-radius: 10px;
+                    outline: 1px solid var(--border-color);
+                    padding: 15px;
+                    .notime-header{
+                        font-size: 1.2rem;
+                        text-align: center;
+                        margin-bottom: .5rem;
+                    }
+                    .notime-message{
+                        display: flex;
+                        gap: .5rem;
+                        align-items: center;
+                        justify-content: center;
+                        .icon{
+                            height: 2rem;
+                            aspect-ratio: 1/1;
+                        }
+                        .info{
+                            color: var(--text-color-helper);
+                            width: calc(100% - 2.5rem);
+                        }
+                    }
+                }
                 .btn{
                     padding-inline: 1rem;
                     &[disabled]{
-                        background-color: #e9e9e9;
+                        background-color: var(--button-bg-disabled);
+                        color: gray;
+                        cursor: auto;
                     }
                     &[selected]{
                         background-color: var(--primary-color);
                         font-weight: 600;
+                        color: white;
                     }
                 }
             }
@@ -178,7 +210,8 @@
                 {{if .Id}}
                     <div class="user">
                         <img src="/static/location.svg" class="photo" />
-                        <p class="name">{{.Name}} <input type="radio" class="radioBtn" name="employee" value="{{.Id}}" checked hx-put="/etablissement/{{$id}}/rendez-vous" hx-swap="innerHTML" hx-target="#time" hx-ext="json-enc-custom" hx-include="[name='date']" /></p>
+                        <p class="name">{{.Name}} <input type="radio" class="radioBtn" name="employee" value="{{.Id}}" 
+                        hx-put="/etablissement/{{$id}}/rendez-vous/nouveau" hx-swap="innerHTML" hx-target="#time" hx-ext="json-enc-custom" hx-include="[name='date']" /></p>
                     </div>
                 {{end}}
             {{end}}
@@ -193,7 +226,8 @@
                 <div class="checkbox-group">
                     {{range $index, $element := .Etablishment.Service}}
                     <div class="checkbox-wrapper">
-                        <input type="checkbox" id="{{$element.Id}}" name="service[{{$index}}][id]" {{if eq $index 0}}checked{{end}} value="{{$element.Id}}" class="form-checkbox" onclick="onServiceChange(this)">
+                        <input type="checkbox" id="{{$element.Id}}" name="service[{{$index}}][id]" {{if eq $element.Checked true}}checked{{end}} value="{{$element.Id}}" 
+                        class="form-checkbox" onclick="onServiceChange(this)">
                         <label for="{{$element.Id}}" class="checkbox-label">{{$element.Name}} ({{.Price}})</label>
                         <input type="number" name="service[{{$index}}][duration]" value="{{$element.Duration}}" class="hidden" />
                     </div>
@@ -214,7 +248,8 @@
             </div>
             <div class="date">
                 <label for="date">Date</label>
-                <input type="date" id="date" name="date" min="" required hx-put="/etablissement/{{.Etablishment.Id}}/rendez-vous/nouveau" hx-target="#time" hx-swap="innerHTML" hx-ext="json-enc-custom" hx-include="[name='employee']" />
+                <input type="date" id="date" name="date" min="" required 
+                hx-put="/etablissement/{{.Etablishment.Id}}/rendez-vous/nouveau" hx-target="#time" hx-swap="innerHTML" hx-ext="json-enc-custom" hx-include="[name='employee']" />
             </div>
             <p style="margin-bottom: .5rem;">Heure</p>
             <div id="time">
@@ -238,6 +273,7 @@
         const dd = String(today.getDate()).padStart(2, '0');
         const formattedToday = `${yyyy}-${mm}-${dd}`;
         dateInput.min = formattedToday;
+        dateInput.value = formattedToday
 
         appointment.addEventListener("htmx:beforeRequest", (e)=>{
             const time = document.querySelectorAll(".btn[disabled]")
@@ -285,11 +321,6 @@
         const getServices = ()=>{
             const time = document.querySelector('.btn[selected]')
             if (!time) return
-            //const serviceChosen = []
-            //for(const service of services){
-            //    if (!service.checked) continue
-            //    serviceChosen.push(service.value)
-            //}
             return {time: time.innerHTML}
         }
     </script>

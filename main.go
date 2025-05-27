@@ -34,8 +34,8 @@ func main(){
     mux.HandleFunc("/etablissement", route.MyEtablishmentHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/parametre", route.ParametreHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/service", route.ServiceHandler.ServeHTTP)
-    mux.HandleFunc("/etablissement/employee", route.EmployeHandler.ServeHTTP)
-    mux.HandleFunc("/employee/{id}", route.EtablishmentEmployeHandler.ServeHTTP)
+    mux.HandleFunc("/etablissement/employee", route.EtablishmentEmployeHandler.ServeHTTP)
+    mux.HandleFunc("/employee/{id}", route.EmployeHandler.ServeHTTP)
 
     server := http.Server{
         Addr: Addr,

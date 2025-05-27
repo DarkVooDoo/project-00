@@ -4,11 +4,12 @@ import (
 	"log"
 	"net/http"
 	"planify/model"
-	"time"
+	"strconv"
 )
 
 type MyEtablishmentRoute struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Etablishment []model.Etablishment
     Appointment []model.Appointment
     Category []model.KeyValue
@@ -40,34 +41,25 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
     
     list, _ := etablishment.UserEtablishments(conn)
     me.Etablishment = list
+	me.Navbar = model.GetNavbarFromCache(conn, me.User)
     me.Category = model.Categorys(conn)
-    etablishmentCookie, err := r.Cookie("eid")
-    if len(list) > 0 && err != nil{
-        me.CurrentEtablishment = list[0].Id
-    }else if err == nil{
-        etablishentQuery := r.URL.Query().Get("etablishment")
-        if  etablishentQuery == ""{
-            me.CurrentEtablishment = etablishmentCookie.Value
-        }else{
-            me.CurrentEtablishment = etablishentQuery
-        }
-    }else if len(list) == 0{
+	etablishentId, err  := strconv.Atoi(r.URL.Query().Get("etablishment"))
+	if err != nil{
+		log.Printf("error converting the id to number: %s", err)
+		etablishentId = me.User.Etablishment
+	}
+	me.User.Etablishment = etablishentId
+	if err := model.CreateAccessToken(me.User.Id, me.User.ShortName, me.User.Picture, me.User.Etablishment, me.User.Employee, w); err != nil{
+		log.Printf("Error creating the token; %s", err)
+		return
+	}
+    if len(list) == 0{
         w.Header().Add("Location", "/etablissement/creer")
         w.WriteHeader(http.StatusTemporaryRedirect)
         return
     }
-    appointment := model.Appointment{UserId: me.User.Id, EtablishmentId: me.CurrentEtablishment}
+    appointment := model.Appointment{UserId: me.User.Id, EtablishmentId: me.User.Etablishment}
     me.Appointment = appointment.EtablishmentUpcomingAppointments(conn)
-    cookie := http.Cookie{
-        Name: "eid",
-        Value: me.CurrentEtablishment,
-        HttpOnly: true,
-        Secure: true,
-        Expires: time.Now().Add(time.Hour * 3),
-        SameSite: http.SameSiteStrictMode,
-        Path: "/etablissement",
-    }
-    http.SetCookie(w, &cookie)
     if err := CreatePage(me, w, "view/page.html", "view/my_etablishment.tmpl", "view/component/AppointmentCard.tmpl"); err != nil{
         return
     }
@@ -79,17 +71,6 @@ func (me MyEtablishmentRoute) Post(w http.ResponseWriter, r *http.Request){
         log.Printf("error reading the token")
         return
     }
-    cookie := http.Cookie{
-        Name: "eid",
-        Value: r.FormValue("etablishment"),
-        HttpOnly: true,
-        Secure: true,
-        Expires: time.Now().Add(time.Hour * 3),
-        SameSite: http.SameSiteStrictMode,
-        Path: "/etablishment",
-    }
-    log.Println(cookie.Value)
-    http.SetCookie(w, &cookie)
     //w.Header().Add("HX-Redirect", "/etablissement")
     //w.WriteHeader(http.StatusTemporaryRedirect)
 }

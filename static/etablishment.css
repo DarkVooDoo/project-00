@@ -118,10 +118,16 @@
         container: schedule / inline-size;
         background-color: var(--card-color);
         box-shadow: var(--card-shadow);
-        .title{
-            font-size: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+        .schedule-header{
             padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            .title{
+                font-size: 1.5rem;
+            }
+            .title-helper{
+                color: var(--text-color-helper);
+                font-size: .9rem;
+            }
         }
         .shifts{
             display: flex;

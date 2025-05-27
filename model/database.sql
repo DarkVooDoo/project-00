@@ -10,7 +10,8 @@ CREATE TABLE users (
     longitude VARCHAR(10),
     email VARCHAR(50) UNIQUE NOT NULL,
     picture TEXT,
-    salt INT,
+    salt INT NOT NULL,
+    confirmed BOOL DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -47,6 +48,7 @@ CREATE TABLE service (
     description VARCHAR(150) NOT NULL,
     duration INT NOT NULL,
     price MONEY NOT NULL,
+    discount INT DEFAULT 0,
     etablishment_id BIGINT REFERENCES etablishment(id)
 );
 

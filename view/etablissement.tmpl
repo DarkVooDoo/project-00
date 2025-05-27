@@ -45,7 +45,10 @@
         </div>
 
         <section class="schedule">
-            <h1 class="title">Horaires d'ouverture</h1>
+            <div class="schedule-header">
+                <h1 class="title">Horaires d'ouverture</h1>
+                <p class="title-helper">Information sur les horaires de ouvertures</p>
+            </div>
             <div class="shifts">
                 {{range $index, $value := .Etablishment.Schedule}}
                     <div class="schedule-card {{if and (eq $index $today) (eq $open "Actuellement Ouvert")}}open{{end}} {{if and (eq $open "Actuellement Fermé") (eq $index $today)}}close{{end}}">

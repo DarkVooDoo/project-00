@@ -8,7 +8,7 @@ import (
 )
 
 type ScheduleRoute struct{
-    Id string
+    Id int
     Week []string
     Schedule model.EtablishmentSchedule
 }
@@ -34,13 +34,14 @@ func (s ScheduleRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
 func (s ScheduleRoute) Get(w http.ResponseWriter, r *http.Request){
 
     var user model.UserClaim
-    VerifyToken(r, w, &user)
+	if err := VerifyToken(r, w, &user); err != nil{
+		w.Header().Add("HX-Redirect", "/")
+		return
+	}
 
-    //TODO: obtenir le etablissement via le cookie
-    entreprise := model.Etablishment{Id: "1"}
-    schedule := entreprise.GetSchedule()
-    s.Id = entreprise.Id
-    s.Schedule = schedule.EtablishmentSchedule
+    entreprise := model.Etablishment{Id: user.Etablishment}
+	s.Id = user.Etablishment
+    s.Schedule = entreprise.GetSchedule()
     s.Week = []string{"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"}
     
     temp, err := template.New("schedule").Parse(`
@@ -58,7 +59,7 @@ func (s ScheduleRoute) Get(w http.ResponseWriter, r *http.Request){
                                     </svg>
                                 </button>
                                 <button type="button" class="close" onclick="onDeleteShift(this)">
-                                    <svg class="icon" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <svg class="icon" viewBox="0 0 96 96" fill="none">
                                         <path d="M18.8281 13.1719L13.1719 18.8281L42.3438 48L13.1719 77.1719L18.8281 82.8281L48 53.6562L77.1719 82.8281L82.8281 77.1719L53.6562 48L82.8281 18.8281L77.1719 13.1719L48 42.3438L18.8281 13.1719Z" fill="var(--text-color)"/>
                                     </svg>
                                 </button>
@@ -86,7 +87,10 @@ func (s ScheduleRoute) Get(w http.ResponseWriter, r *http.Request){
 func (s ScheduleRoute) Post(w http.ResponseWriter, r *http.Request){
 
     var user model.UserClaim
-    VerifyToken(r, w, &user)
+	if err := VerifyToken(r, w, &user); err != nil{
+		w.Header().Add("HX-Redirect", "/connexion")
+		return
+	}
     var payload model.SchedulePayload
     var schedule model.Etablishment = model.Etablishment{UserId: user.Id}
     if err := ReadJsonBody(r.Body, &payload); err != nil{

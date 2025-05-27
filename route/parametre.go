@@ -31,7 +31,7 @@ func (p ProParametreRoute) Get(w http.ResponseWriter, r *http.Request){
     defer conn.Close()
 
     //TODO: obtenir le etablissement via le cookie
-    etablishment := model.Etablishment{Id: "1", UserId: p.User.Id}
+    etablishment := model.Etablishment{Id: p.User.Etablishment, UserId: p.User.Id}
     p.Category = model.Categorys(conn)
     if err := etablishment.Parametre(conn); err != nil{
         w.Header().Add("Location", "/etablissement")

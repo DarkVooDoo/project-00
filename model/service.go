@@ -9,21 +9,22 @@ import (
 )
 
 type Service struct{
-    Id string `json:"id"`
+    Id int `json:"id,string"`
     Name string `json:"name"`
     Price string `json:"price"`
     Duration int `json:"duration,string"`
     Description string `json:"description"`
+	Discount int `json:"discount,string"`
     Checked bool
     CurrencyPrice string
-    EtablishmentId string
+    EtablishmentId int
 }
 
 func (s *Service) Create()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    serviceRow := conn.QueryRowContext(context.Background(), `INSERT INTO service (name, price, duration, description, etablishment_id) VALUES($1,$2,$3,$4,$5) RETURNING id`, s.Name, s.Price, s.Duration, s.Description, s.EtablishmentId)
+    serviceRow := conn.QueryRowContext(context.Background(), `INSERT INTO service (name, price, duration, description, discount, etablishment_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING id`, s.Name, s.Price, s.Duration, s.Description, s.Discount, s.EtablishmentId)
     if err := serviceRow.Scan(&s.Id); err != nil{
         log.Printf("error query inserting service: %s", err)
         return errors.New("error in the query")
@@ -34,13 +35,13 @@ func (s *Service) Create()error{
 func (s *Service) GetList(conn *sql.Conn)([]Service, error){
     var list []Service
 
-    serviceList, err := conn.QueryContext(context.Background(),`SELECT id, name, price::NUMERIC, price, duration, description FROM service WHERE etablishment_id=$1`, s.EtablishmentId)
+    serviceList, err := conn.QueryContext(context.Background(),`SELECT id, name, price::NUMERIC, price, duration, description, discount FROM service WHERE etablishment_id=$1`, s.EtablishmentId)
     if err != nil{
         log.Printf("error in the query: %s", err)
         return list, errors.New("error in the query")
     }
     for serviceList.Next(){
-        if err := serviceList.Scan(&s.Id, &s.Name, &s.Price, &s.CurrencyPrice, &s.Duration, &s.Description); err != nil{
+        if err := serviceList.Scan(&s.Id, &s.Name, &s.Price, &s.CurrencyPrice, &s.Duration, &s.Description, &s.Discount); err != nil{
             log.Printf("error scanning service: %s", err)
         }
         list = append(list, *s)
@@ -69,7 +70,7 @@ func (s *Service) Delete()error{
     conn := GetDBPoolConn()
     defer conn.Close()
  
-    result, err := conn.ExecContext(context.Background(), `DELETE FROM service WHERE id=$1`, s.Id)
+    result, err := conn.ExecContext(context.Background(), `DELETE FROM service WHERE id=$1 AND etablishment_id=$2`, s.Id, s.EtablishmentId)
     if err != nil{
         log.Printf("error deleting service: %s", err)
         return errors.New("error in the query")

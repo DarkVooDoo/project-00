@@ -292,11 +292,14 @@
       .btn{
           padding-inline: 1rem;
           &[disabled]{
-              background-color: #e9e9e9;
+              background-color: var(--button-bg-disabled);
+              color: gray;
+              cursor: auto;
           }
           &[selected]{
               background-color: var(--primary-color);
               font-weight: 600;
+              color: white;
           }
       }
     }
@@ -504,7 +507,7 @@
           <div class="form-group">
             <label class="form-label">Services réservés</label>
             <div class="input-wrapper">
-              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
               </svg>
               <span class="helper-text">Modifiez les services réservés pour ce rendez-vous</span>
@@ -512,9 +515,10 @@
             <div class="checkbox-group">
                 {{range $index, $element := .Service}}
                     <div class="checkbox-wrapper">
-                      <input type="checkbox" id="{{$element.Id}}{{$element.Name}}" name="service[$index]" value="{{$element.Id}}" class="form-checkbox" {{if $element.Checked}}checked{{end}}
+                      <input type="checkbox" id="{{$element.Id}}{{$element.Name}}" name="service[{{$index}}][id]" value="{{$element.Id}}" class="form-checkbox" {{if $element.Checked}}checked{{end}}
                       onchange="onServiceChange(this)">
                       <label for="{{$element.Id}}{{$element.Name}}" class="checkbox-label">{{$element.Name}} ({{$element.CurrencyPrice}})</label>
+                      <input type="number" name="service[{{$index}}][duration]" value="{{$element.Duration}}" class="hidden" />
                     </div>
                 {{end}}
             </div>
@@ -536,7 +540,7 @@
               <div style="margin-bottom: .5rem;">
                 <label for="date" class="form-label">Date</label>
                 <input type="date" id="date" name="date" class="form-input" value="{{slice .Appointment.Date 0 10}}" required 
-                hx-put="/etablissement/{{.Appointment.EtablishmentId}}/rendez-vous/noveau" hx-trigger="change" hx-ext="json-enc-custom" hx-target=".time-slots">
+                hx-put="/etablissement/{{.Appointment.EtablishmentId}}/rendez-vous/nouveau" hx-trigger="change" hx-ext="json-enc-custom" hx-target=".time-slots">
               </div>
               <div>
                 <label class="form-label">Heure</label>

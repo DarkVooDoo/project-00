@@ -28,14 +28,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION SignUser(userEmail VARCHAR) RETURNS TABLE (id BIGINT, shortname TEXT, picture TEXT, employee BOOL, etablishment BOOL) AS $$
+CREATE FUNCTION SignUser(userEmail VARCHAR) RETURNS TABLE (id BIGINT, shortname TEXT, picture TEXT, employee BIGINT, etablishment BIGINT, salt INT, password TEXT) AS $$
 BEGIN
-    RETURN QUERY SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), u.picture, (SELECT e.user_id = u.id FROM employee AS e LIMIT 1), (SELECT et.user_id = u.id FROM etablishment AS et LIMIT 1) FROM users AS u WHERE u.email=userEmail;
+    RETURN QUERY SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COALESCE(u.picture, ''), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0), 
+    COALESCE((SELECT et.id FROM  etablishment AS et WHERE et.user_id=u.id LIMIT 1), 0), u.salt, u.password FROM users AS u WHERE u.email=userEmail AND u.confirmed=true;
 END;
 $$ LANGUAGE plpgsql;
 
-INSERT INTO users(firstname, lastname, email, password) VALUES('John', 'Doe', 'john@test.com', 'Test12345!'), ('Alice', 'Price', 'alice@test.com', 'Localhost232!'), 
-('Inés', 'Narayanaiken', 'ines@test.com', 'testskdqsd');
+INSERT INTO users(firstname, lastname, email, password, confirmed, salt) VALUES('John', 'Doe', 'john@test.com', 'Test12345!', true, 4321), 
+('Alice', 'Price', 'alice@test.com', 'Localhost232!', true, 6521), ('Inés', 'Narayanaiken', 'ines@test.com', 'testskdqsd', true, 1243);
 
 INSERT INTO category (name) VALUES('Manicure'), ('Barber'), ('Coiffeur'), ('Spa'), ('Institut Beauté'), ('Autre');
 
@@ -49,9 +50,9 @@ INSERT INTO service (name, price, duration, description, etablishment_id) VALUES
 ('Manicure', '15', 25, 'Mama Seigneur petite descirption', 1);
 
 INSERT INTO employee(schedule, etablishment_id, user_id) VALUES('{"from": ["09:00", "10:00", "10:00", "", "", "", ""], "to": ["17:00", "18:00", "17:00", "", "", "", ""]}', 2, 2), 
-('{"from": ["13:00", "13:00", "13:00", "", "", "", ""], "to": ["20:00", "19:00", "20:00", "", "", "", ""]}', 1, 3);
+('{"from": ["13:00", "13:00", "13:00", "", "", "", ""], "to": ["20:00", "19:00", "20:00", "", "", "", ""]}', 1, 3), ('{"from": ["09:00", "10:00", "10:00", "", "", "", ""], "to": ["17:00", "18:00", "17:00", "", "", "", ""]}', 1, 2);
 
 INSERT INTO appointment("date", status, user_id, etablishment_id, employee_id) VALUES('[2025-03-10 10:00, 2025-03-10 11:00)', 'Terminé', 1, 2, 1), 
-('[2025-05-12 15:00, 2025-05-12 15:30)', 'Confirmé', 1, 2, 1), ('[2025-04-22 11:00, 2025-04-22 12:00)', 'Annulé', 1, 1, 2);
+('[2025-05-23 15:00, 2025-05-23 15:30)', 'Confirmé', 1, 2, 1), ('[2025-04-22 11:00, 2025-04-22 12:00)', 'Annulé', 1, 1, 2);
 
 INSERT INTO appointment_service(service_id, appointment_id) VALUES(1, 1), (1,2), (2,2), (4, 3), (3, 3);

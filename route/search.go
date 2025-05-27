@@ -8,6 +8,7 @@ import (
 
 type Search struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Etablishment []model.Etablishment
 }
 
@@ -24,7 +25,11 @@ func (s Search) ServeHTTP(w http.ResponseWriter, r *http.Request){
 }
 
 func (s Search) Get(w http.ResponseWriter, r *http.Request){
-
+	if err := VerifyToken(r, w, &s.User); err == nil{
+		conn := model.GetDBPoolConn()
+		defer conn.Close()
+		s.Navbar = model.GetNavbarFromCache(conn, s.User)
+	}
     query := r.URL.Query().Get("query")
     location := r.URL.Query().Get("location")
     lat := r.URL.Query().Get("lon")

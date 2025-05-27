@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"planify/model"
+	"strconv"
 	"text/template"
 )
 
@@ -34,7 +35,8 @@ func (a Appointment) Get(w http.ResponseWriter, r *http.Request){
     conn := model.GetDBPoolConn()
     defer conn.Close()
 
-    appointment := model.Appointment{EtablishmentId: r.PathValue("id")}
+	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
+    appointment := model.Appointment{EtablishmentId: etablishmentId}
     var myAppointments []model.Appointment
     switch r.URL.Query().Get("type"){
         case "oldest":

@@ -9,6 +9,7 @@ import (
 
 type ViewAppointmentRoute struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Service []model.Service
     Appointment model.Appointment
     Customer model.User
@@ -34,8 +35,11 @@ func (va ViewAppointmentRoute) Get(w http.ResponseWriter, r *http.Request){
         w.Header().Add("Location", "/connexion")
         w.WriteHeader(http.StatusTemporaryRedirect)
     }
-    appointment := model.Appointment{Id: r.PathValue("id"), UserId: va.User.Id}
-    customer, employee, services, availebleDates, err := appointment.GetFull()
+	conn := model.GetDBPoolConn()
+	defer conn.Close()
+	va.Navbar = model.GetNavbarFromCache(conn, va.User)
+    appointment := model.Appointment{Id: r.PathValue("id"), UserId: va.User.Id, EmployeeId: va.User.Employee}
+    customer, employee, services, availebleDates, err := appointment.GetFull(conn)
     if err != nil{
         w.Header().Add("Location", "/")
         w.WriteHeader(http.StatusTemporaryRedirect)

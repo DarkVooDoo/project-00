@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/lib/pq"
@@ -22,12 +21,12 @@ type SchedulePayload struct{
 }
 
 type KeyValue struct{
-    Id string
+    Id int
     Value string
 }
 
 type Etablishment struct{
-    Id string
+    Id int
     Name string `json:"name"`
     Adresse string `json:"adresse"`
     Postal string `json:"postal"`
@@ -42,7 +41,7 @@ type Etablishment struct{
     TodaySchedule string
     IsOpen string
     Category string `json:"category"`
-    UserId string
+    UserId int
 }
 
 var Week = []string{"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"}
@@ -105,14 +104,12 @@ func (e *Etablishment) UserEtablishments(conn *sql.Conn)([]Etablishment, error){
     return list, nil
 }
 
-func (e *Etablishment) GetEmployeeAndService(){
+func (e *Etablishment) GetEmployeeAndService(conn *sql.Conn){
     var employee Employe
     var service Service
-    var name, id sql.NullString
+    var name  sql.NullString
+	var id sql.NullInt64
     //TODO: optimizer les requetes a la DB on doit se connecter 2 fois
-    conn := GetDBPoolConn()
-    defer conn.Close()
-
     employeeList, err := conn.QueryContext(context.Background(), `SELECT em.id, u.firstname || ' ' || u.lastname, e.name, e.id FROM etablishment AS e 
     LEFT JOIN employee AS em ON em.etablishment_id=e.id LEFT JOIN users AS u ON u.id=em.user_id WHERE e.id=$1`, e.Id)
     if err != nil{
@@ -124,7 +121,7 @@ func (e *Etablishment) GetEmployeeAndService(){
             log.Printf("error scan: %s", err)
         }
         employee.Name = name.String
-        employee.Id = id.String
+        employee.Id = int(id.Int64)
         e.Employee = append(e.Employee, employee)
     }
 
@@ -141,10 +138,7 @@ func (e *Etablishment) GetEmployeeAndService(){
     }
 }
 
-func (e *Etablishment) Public()(int, error){
-    conn := GetDBPoolConn()
-    defer conn.Close()
-
+func (e *Etablishment) Public(conn *sql.Conn)(int, error){
     var schedule, phone  sql.NullString
     var service Service
     var jsonSchedule EtablishmentSchedule
@@ -175,35 +169,33 @@ func (e *Etablishment) Public()(int, error){
     }
     for i, v := range jsonSchedule.From{
         if v == "" || jsonSchedule.To[i] == ""{
-            e.Schedule = append(e.Schedule, KeyValue{Week[i], "Fermé"})
+            //e.Schedule = append(e.Schedule, KeyValue{Week[i], "Fermé"})
             continue
         }
-        e.Schedule = append(e.Schedule,  KeyValue{Week[i], fmt.Sprintf("%s - %s", v, jsonSchedule.To[i])})
+        //e.Schedule = append(e.Schedule,  KeyValue{Week[i], fmt.Sprintf("%s - %s", v, jsonSchedule.To[i])})
         e.Phone = phone.String
     }
     return weekDay, nil
 }
 
-func (e *Etablishment) GetSchedule()(SchedulePayload){
+func (e *Etablishment) GetSchedule()(EtablishmentSchedule){
     conn := GetDBPoolConn()
     defer conn.Close()
 
     var schedule sql.NullString
     var jsonSchedule EtablishmentSchedule
-    var data SchedulePayload
     scheduleRow := conn.QueryRowContext(context.Background(), `SELECT schedule FROM etablishment WHERE id=$1`, e.Id)
     if err := scheduleRow.Scan(&schedule); err != nil{
         log.Printf("error scanning the schedule: %s", err)
-        return data
+        return jsonSchedule
     }
 
     if err := json.Unmarshal([]byte(schedule.String), &jsonSchedule); err != nil{
         log.Printf("error unmashal data: %s", err)
-        return data
+        return jsonSchedule
     
     }
-    data.EtablishmentSchedule = jsonSchedule
-    return data
+    return jsonSchedule
 }
 
 func (e *Etablishment) UpdateSchedule(schedule EtablishmentSchedule, id string)error{
