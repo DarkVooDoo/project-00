@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/lib/pq"
@@ -18,6 +19,11 @@ type EtablishmentSchedule struct{
 type SchedulePayload struct{
     EtablishmentSchedule
     Id string `json:"id"`
+}
+
+type DaySchedule struct{
+	Day string
+	Time string
 }
 
 type KeyValue struct{
@@ -37,7 +43,7 @@ type Etablishment struct{
     AllPayment []string 
     Employee []Employe
     Service []Service
-    Schedule []KeyValue
+    Schedule []DaySchedule
     TodaySchedule string
     IsOpen string
     Category string `json:"category"`
@@ -169,10 +175,10 @@ func (e *Etablishment) Public(conn *sql.Conn)(int, error){
     }
     for i, v := range jsonSchedule.From{
         if v == "" || jsonSchedule.To[i] == ""{
-            //e.Schedule = append(e.Schedule, KeyValue{Week[i], "Fermé"})
+            e.Schedule = append(e.Schedule, DaySchedule{Week[i], "Fermé"})
             continue
         }
-        //e.Schedule = append(e.Schedule,  KeyValue{Week[i], fmt.Sprintf("%s - %s", v, jsonSchedule.To[i])})
+        e.Schedule = append(e.Schedule,  DaySchedule{Week[i], fmt.Sprintf("%s - %s", v, jsonSchedule.To[i])})
         e.Phone = phone.String
     }
     return weekDay, nil

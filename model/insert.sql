@@ -42,8 +42,7 @@ INSERT INTO category (name) VALUES('Manicure'), ('Barber'), ('Coiffeur'), ('Spa'
 
 INSERT INTO etablishment(name, adresse, postal, schedule, payment, lat, lon, user_id, category_id) VALUES('Momo nails', '7 Rue Matignon', 75002, 
     '{"from": ["09:00", "09:00", "09:00", "09:00", "09:00", "", ""], "to": ["17:00", "17:00", "17:00", "17:00", "17:00", "", ""]}', '{"Espéce", "CB"}', 48.860826, 2.344729, 1, 1), 
-('Gringo style', '39 Rue Martyr', 75018, 
-    '{"from": ["09:00", "09:00", "09:00", "09:00", "09:00", "", ""], "to": ["17:00", "17:00", "17:00", "17:00", "17:00", "", ""]}', '{"Espéce", "Paypal"}', 48.864581, 2.352282, 1, 2);
+('Gringo style', '39 Rue Martyr', 75018, '{"from": ["09:00", "09:00", "09:00", "09:00", "09:00", "", ""], "to": ["17:00", "17:00", "17:00", "17:00", "17:00", "", ""]}', '{"Espéce", "Paypal"}', 48.864581, 2.352282, 1, 2);
 
 INSERT INTO service (name, price, duration, description, etablishment_id) VALUES('Coupe', '20', 30, 'Hello Descruiption pour le service', 2), 
 ('Coupe + Barbe', '25', 45, 'Je sais pas quoi dire de la description', 2), ('Massage', '35', 50, 'no se q decir en esta descriptcion pero ahi esta', 1), 
