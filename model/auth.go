@@ -23,8 +23,8 @@ type User struct{
     Id int
     Town string `json:"town"`
     Postal string `json:"postal"`
-    Lat string `json:"lat"`
-    Lon string `json:"lon"`
+    Lat float64 `json:"lat,string"`
+    Lon float64 `json:"lon,string"`
     Phone string `json:"phone"`
     Email string `json:"email"`
     Password string `json:"password"`

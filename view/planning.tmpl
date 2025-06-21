@@ -71,6 +71,11 @@
     }
     #schedule{
         margin-inline: calc(10px + 10px);
+        .card.htmx-swapping{
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 500ms linear;
+        }
         .card{
             --card-height: 232px;
             position: relative;
@@ -177,7 +182,7 @@
         
         .offday{
             max-width: 750px;
-            margin: 10px auto;
+            margin: 0px auto;
             background-color: var(--card-color);
             box-shadow: var(--card-shadow);
             border-radius: 10px;
@@ -359,7 +364,7 @@ margin: auto;
                         <button type="button" class="footerBtn deleteBtn" onclick="onCancelAppointment({{.Id}})">Annuler</button>
                         <a href="/rendez-vous/{{.Id}}" class="footerBtn updateBtn">Modifier</a>
                     {{else}}
-                        <h2 class="nowText">Maintenant</h2>
+                        <h2 class="nowText">En Cours</h2>
                     {{end}}
                   </div>
                 </div>
@@ -418,7 +423,7 @@ margin: auto;
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-outline" id="cancel-modal-close" onclick="cancelModal.style.display = 'none'">Retour</button>
-                    <button type="button" class="btn btn-danger" id="confirm-cancel" hx-delete="/rendez-vous/${id}" hx-swap="delete" hx-target="#appointment${id}" 
+                    <button type="button" class="btn btn-danger" id="confirm-cancel" hx-delete="/rendez-vous/${id}" hx-swap="delete swap:500ms" hx-target="#appointment${id}" 
                     onclick="cancelModal.style.display = 'none'">Confirmer l'annulation</button>
                   </div>
                 </div>

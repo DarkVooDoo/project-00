@@ -153,10 +153,10 @@
             </div>
             <form id="search" popover action="/recherche" method="GET">
                 <div class="field">
-                    <input type="text" name="query" placeholder="Coiffeur" class="input" autocomplete="off" required />
+                    <input type="text" id="query" name="query" placeholder="Coiffeur" class="input" autocomplete="off" required />
                     <div style="position: relative;display: flex;align-items: center;">
                         <input type="text" id="s-location" name="location" placeholder="Adresse" class="input" autocomplete="off" required 
-                        oninput="onFetchAddr(this, document.getElementById('suggest-addr'), 's-location')" />
+                        oninput="onFetchAddr(this, document.getElementById('suggest-addr'), 's-location', 's-lat', 's-lon')" />
                         <input type="text" name="lon" id="s-lon" style="display: none;" />
                         <input type="text" name="lat" id="s-lat" style="display: none;" />
                         <button type="button" class="my-position">
@@ -180,9 +180,26 @@
           {{template "Body" .}}
         </main>
         <script>
-            const menu = document.getElementById("menu")
-            const closeMenu = document.getElementById("menu-close")
-            const employeeBtns = document.getElementsByClassName("employeeSwitch")
+            if(!menu){
+                var timeout
+                const menu = document.getElementById("menu")
+                const closeMenu = document.getElementById("menu-close")
+                const employeeBtns = document.getElementsByClassName("employeeSwitch")
+
+                for(const employeeSwitch of employeeBtns){
+                    employeeSwitch.addEventListener("htmx:afterRequest", function(ev){
+                        if(!ev.detail.successful) return
+                        for(const btn of employeeBtns){
+                            btn.classList.remove("current")
+                            btn.removeAttribute("disabled")
+                        }
+                        ev.detail.target.classList.add("current")
+                        ev.detail.target.setAttribute("disabled", "")
+                        onCloseModal()
+
+                    })
+                }
+            }
 
             function onCloseModal(){
                 menu.close()
@@ -192,47 +209,36 @@
                 menu.showModal()
             }
 
-            for(const employeeSwitch of employeeBtns){
-                employeeSwitch.addEventListener("htmx:afterRequest", function(ev){
-                    if(!ev.detail.successful) return
-                    for(const btn of employeeBtns){
-                        btn.classList.remove("current")
-                        btn.removeAttribute("disabled")
+            function onFetchAddr(ele, displayContainer, inputAdrId, inputLatId, inputLonId, inputPostalId){
+                clearTimeout(timeout)
+                const addr = document.getElementById(inputAdrId)
+                delete addr.dataset.valid
+                timeout = setTimeout(async ()=>{
+                    const fetchAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${ele.value}&limit=5`)
+                    const addrJson = await fetchAddr.json()
+                    if(!addrJson.features) return
+                    displayContainer.innerHTML = ""
+                    for(const addr of addrJson.features){
+                        const [lon, lat] = addr.geometry.coordinates
+                        displayContainer.innerHTML += `<button type="button" class="suggest" 
+                        onclick="onSelectedAdr(this, '${displayContainer.id}', '${inputAdrId}', '${inputLonId}', '${inputLatId}', '${inputPostalId}')" 
+                        data-lat="${lat}" data-lon="${lon}" data-name="${addr.properties.name}" data-postal="${addr.properties.postcode}">${addr.properties.label}</button>`
                     }
-                    ev.detail.target.classList.add("current")
-                    ev.detail.target.setAttribute("disabled", "")
-                    onCloseModal()
-                    
-                })
+                    displayContainer.classList.remove("hidden")
+                }, 1500)
             }
 
-            document.addEventListener("DOMContentLoaded", ()=>{
-                const onSelectedAdr = (ele, displayContainer, inputAdr, inputLon = undefined, inputLat = undefined, inputPostal = undefined)=>{
-                    inputLon == "undefined" ? null : document.getElementById(inputLon).value = ele.dataset.lon
-                    inputLat == "undefined" ? null :  document.getElementById(inputLat).value = ele.dataset.lat
-                    inputPostal == "undefined" ? null : document.getElementById(inputPostal).value = ele.dataset.postal
-                    document.getElementById(inputAdr).value = ele.dataset.name
-                    document.getElementById(displayContainer).innerHTML = null
-                }
-
-                let timeout
-                const onFetchAddr = (ele, displayContainer, inputAdrId, inputLatId, inputLonId, inputPostalId)=>{
-                    clearTimeout(timeout)
-                    timeout = setTimeout(async ()=>{
-                        const fetchAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${ele.value}&limit=5`)
-                        const addrJson = await fetchAddr.json()
-                        if(!addrJson.features) return
-                        displayContainer.innerHTML = ""
-                        for(const addr of addrJson.features){
-                            const [lon, lat] = addr.geometry.coordinates
-                            displayContainer.innerHTML += `<button type="button" class="suggest" 
-                            onclick="onSelectedAdr(this, '${displayContainer.id}', '${inputAdrId}', '${inputLonId}', '${inputLatId}', '${inputPostalId}')" 
-                            data-lat="${lat}" data-lon="${lon}" data-name="${addr.properties.name}" data-postal="${addr.properties.postcode}">${addr.properties.label}</button>`
-                        }
-                    }, 1500)
-                }
-
-            })
+            function onSelectedAdr(ele, displayContainer, inputAdr, inputLon = undefined, inputLat = undefined, inputPostal = undefined){
+                inputLon == "undefined" ? null : document.getElementById(inputLon).value = ele.dataset.lon
+                inputLat == "undefined" ? null :  document.getElementById(inputLat).value = ele.dataset.lat
+                inputPostal == "undefined" ? null : document.getElementById(inputPostal).value = ele.dataset.postal
+                document.getElementById(inputAdr).value = ele.dataset.name
+                const container = document.getElementById(displayContainer)
+                const addr = document.getElementById(inputAdr)
+                addr.dataset.valid = "true"
+                container.innerHTML = null
+                container.classList.add("hidden")
+            }
         </script>
   </body>
 </html>

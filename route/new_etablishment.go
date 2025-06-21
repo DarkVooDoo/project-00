@@ -10,7 +10,7 @@ type NewEtablishmentRoute struct{
     User model.UserClaim
 	Navbar model.CacheNavbar
     Category []model.KeyValue
-
+	Payment []string
 }
 
 var NewEtablishmentHandler http.Handler = &NewEtablishmentRoute{}
@@ -36,6 +36,8 @@ func (e NewEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
 
 	e.Navbar = model.GetNavbarFromCache(conn, e.User)
     e.Category = model.Categorys(conn)
+	e.Payment = model.Payments(conn)
+
     if err := CreatePage(e, w, "view/page.html", "view/new_etablishment.tmpl"); err != nil{
         log.Println(err)
     }

@@ -46,6 +46,9 @@
 
     .form-group {
         margin-bottom: 1.5rem;
+        &:last-child{
+            margin-bottom: 0px;
+        }
         .form-label {
             display: block;
             font-size: 0.875rem;
@@ -75,18 +78,26 @@
                 grid-template-columns: 1fr .3fr;
                 gap: .5rem;
                 align-items: center;
+                .form-input[data-valid]{
+                    outline: 1px solid green;
+                }
                 #location-suggest{
                     position: absolute;
                     left: 0;
                     top: calc(1.375rem + 1rem + 5px);
                     width: 100%;
-                    background-color: #dbdbdb;
+                    background-color: var(--card-color);
                     border-radius: 5px;
+                    outline: 1px solid var(--border-color);
                     .suggest{
                         line-height: 2rem;
                         text-align: start;
                         width: 100%;
                         padding-inline: 10px;
+                        cursor: pointer;
+                        &:hover{
+                            background-color: var(--hover-color);
+                        }
                     }
                 }
             }
@@ -205,9 +216,11 @@
                   </svg>
                   <div class="form-adr">
                     <input type="text" id="adr" name="adresse" class="form-input" placeholder="Adresse complète" autocomplete="off"  required 
-                    oninput="onFetchAddr(this, document.getElementById('location-suggest'), 'adr', 'undefined', 'undefined', 'postal')" />
-                    <input type="number" placeholder="Postal" autocomplete="off" pattern="[0-9]{5}" id="postal" name="postal" class="form-input" required/>
-                    <div id="location-suggest"></div>
+                    oninput="onFetchAddr(this, document.getElementById('location-suggest'), 'adr', 'lat', 'lon', 'postal')" />
+                    <input type="number" placeholder="Postal" autocomplete="off" pattern="[0-9]{5}" id="postal" name="postal" class="form-input" required readonly/>
+                    <input type="number" id="lat" name="lat" step="any" class="hidden" />
+                    <input type="number" id="lon" name="lon" step="any" class="hidden" />
+                    <div id="location-suggest" class="hidden"></div>
                   </div>
                 </div>
               </div>
@@ -242,26 +255,12 @@
                   <span class="form-label">Sélectionnez tous les moyens de paiement acceptés</span>
                 </div>
                 <div class="checkbox-group">
-                  <div class="checkbox-wrapper">
-                    <input type="checkbox" id="cash" class="form-checkbox" name="payment[0]" value="Espéces">
-                    <label for="cash" class="checkbox-label">Espèces</label>
-                  </div>
-                  <div class="checkbox-wrapper">
-                    <input type="checkbox" id="credit-card" class="form-checkbox" name="payment[1]" value="Carte">
-                    <label for="credit-card" class="checkbox-label">Carte de crédit</label>
-                  </div>
-                  <div class="checkbox-wrapper">
-                    <input type="checkbox" id="mobile-payment" class="form-checkbox" name="payment[3]" value="Paypal">
-                    <label for="mobile-payment" class="checkbox-label">Paypal</label>
-                  </div>
-                  <div class="checkbox-wrapper">
-                    <input type="checkbox" id="bank-transfer" class="form-checkbox" name="payment[4]" value="Virement">
-                    <label for="bank-transfer" class="checkbox-label">Virement bancaire</label>
-                  </div>
-                  <div class="checkbox-wrapper">
-                    <input type="checkbox" id="check" class="form-checkbox" name="payment[5]" value="Chéque">
-                    <label for="check" class="checkbox-label">Chèque</label>
-                  </div>
+                    {{range $index, $value := .Payment}}
+                        <div class="checkbox-wrapper">
+                          <input type="checkbox" id="cash" class="form-checkbox" name="payment[{{$index}}]" value="{{$value}}">
+                          <label for="cash" class="checkbox-label">{{$value}}</label>
+                        </div>
+                    {{end}}
                 </div>
               </div>
             </div>

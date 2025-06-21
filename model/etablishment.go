@@ -37,8 +37,8 @@ type Etablishment struct{
     Adresse string `json:"adresse"`
     Postal string `json:"postal"`
     Phone string `json:"phone"`
-    Lat float64
-    Lon float64
+	Lat float64 `json:"lat,string"`
+	Lon float64 `json:"lon,string"`
     Payment []string `json:"payment"`
     AllPayment []string 
     Employee []Employe
@@ -56,8 +56,8 @@ func (e *Etablishment) Create()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    etablishmentRow:= conn.QueryRowContext(context.Background(), `INSERT INTO etablishment(name, adresse, postal, phone, payment, category_id, user_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`, 
-    e.Name, e.Adresse, e.Postal, e.Phone, pq.Array(e.Payment), e.Category, e.UserId)
+    etablishmentRow:= conn.QueryRowContext(context.Background(), `INSERT INTO etablishment(name, adresse, postal, geolocation, phone, payment, category_id, user_id) 
+	VALUES($1,$2,$3,POINT($4, $5),$6,$7,$8,$9) RETURNING id`, e.Name, e.Adresse, e.Postal, e.Lat, e.Lon, e.Phone, pq.Array(e.Payment), e.Category, e.UserId)
     if err := etablishmentRow.Scan(&e.Id); err != nil{
         log.Printf("error scanning the query: %s", err)
         return errors.New("error nothing happend")
@@ -94,20 +94,12 @@ func (e *Etablishment) Parametre(conn *sql.Conn)error{
     return nil 
 }
 
-func (e *Etablishment) UserEtablishments(conn *sql.Conn)([]Etablishment, error){
-    var list []Etablishment
-    etablishmentList, err := conn.QueryContext(context.Background(), `SELECT id, name FROM etablishment WHERE user_id=$1`, e.UserId)
-    if err != nil{
-        log.Printf("error in query etablishments: %s", err)
-        return list, errors.New("error getting the etablishments")
+func (e *Etablishment) UserEtablishment(conn *sql.Conn)(error){
+    etablishmentList:= conn.QueryRowContext(context.Background(), `SELECT id, name FROM etablishment WHERE user_id=$1 AND id=$2`, e.UserId, e.Id)
+	if err := etablishmentList.Scan(&e.Id, &e.Name); err != nil{
+		log.Printf("error scanning the etablishment: %s", err)
     }
-    for etablishmentList.Next(){
-        if err = etablishmentList.Scan(&e.Id, &e.Name); err != nil{
-            continue
-        }
-        list = append(list, *e)
-    }
-    return list, nil
+    return nil
 }
 
 func (e *Etablishment) GetEmployeeAndService(conn *sql.Conn){
@@ -131,13 +123,13 @@ func (e *Etablishment) GetEmployeeAndService(conn *sql.Conn){
         e.Employee = append(e.Employee, employee)
     }
 
-    serviceList, err := conn.QueryContext(context.Background(), `SELECT s.id, s.name, s.price, s.duration FROM service AS s WHERE s.etablishment_id=$1`, e.Id)
+	serviceList, err := conn.QueryContext(context.Background(), `SELECT s.id, s.name, s.price, s.price::NUMERIC, s.duration FROM service AS s WHERE s.etablishment_id=$1`, e.Id)
     if err != nil{
         log.Printf("error in the query: %s", err)
         return
     }
     for serviceList.Next(){
-        if err = serviceList.Scan(&service.Id, &service.Name, &service.Price, &service.Duration); err != nil{
+        if err = serviceList.Scan(&service.Id, &service.Name, &service.CurrencyPrice, &service.Price, &service.Duration); err != nil{
             log.Printf("error scan: %s", err)
         }
         e.Service = append(e.Service, service)
@@ -221,6 +213,16 @@ func (e *Etablishment) UpdateSchedule(schedule EtablishmentSchedule, id string)e
     }
 
     return nil
+}
+
+func Payments(conn *sql.Conn)[]string{
+	var paymentList []string
+	paymentRow := conn.QueryRowContext(context.Background(), `SELECT enum_range(NULL::payment_type)`)
+	if err := paymentRow.Scan(pq.Array(&paymentList)); err != nil{
+		log.Printf("error scanning the row: %s", err)
+		return paymentList
+	}
+	return paymentList
 }
 
 func Categorys(conn *sql.Conn)[]KeyValue{

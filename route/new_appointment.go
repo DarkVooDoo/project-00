@@ -75,7 +75,7 @@ func (n NewAppointment) Post(w http.ResponseWriter, r *http.Request){
         log.Printf("error reading the body: %s", err)
         return
     }
-	_, err := time.Parse(time.DateTime, fmt.Sprintf("%s %s:00", n.Date, n.Time))
+	_, err := time.Parse(time.DateTime, fmt.Sprintf("%s %s", n.Date, n.Time))
 	if n.EmployeeId == 0 || len(n.Service) == 0 || err != nil{
 		DisplayNotification(Notitification{"Info", "Formulaire incomplet", "warning"}, w)
 		return

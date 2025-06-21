@@ -5,21 +5,9 @@
 
 
 {{define "Body"}}
-    {{$current := .User.Etablishment}}
     <div class="my-etablishment">
         <div class="header">
-            <button type="button" popovertarget="choose-etablishment" class="switchEtablishmentBtn">Changer Etablissement</button>
-            <div hx-boost="true" id="choose-etablishment" popover>
-                <h1 class="text">Choisir un etablissement</h1>
-                <div class="list">
-                    {{range .Etablishment}}
-                        <a href="/etablissement?etablishment={{.Id}}" class="card btn-outline">
-                            <p>{{.Name}}</p>
-                            <span class="checkmark {{if eq $current .Id}}selected{{end}}"></span>
-                        </a>
-                    {{end}}
-                </div>
-            </div>
+            <h1 id="header-title">{{.Etablishment.Name}}</h1>
             <div class="command">
                 <a class="btn btn-primary" href="/etablissement/creer">Nouveau</a>
                 <a class="btn btn-outline" href="/etablissement/parametre">

@@ -8,6 +8,7 @@ import (
 
 type ProParametreRoute struct{
     User model.UserClaim
+	Navbar model.CacheNavbar
     Etablishment model.Etablishment
     Category []model.KeyValue
 }
@@ -30,7 +31,7 @@ func (p ProParametreRoute) Get(w http.ResponseWriter, r *http.Request){
     conn := model.GetDBPoolConn()
     defer conn.Close()
 
-    //TODO: obtenir le etablissement via le cookie
+	p.Navbar = model.GetNavbarFromCache(conn, p.User)
     etablishment := model.Etablishment{Id: p.User.Etablishment, UserId: p.User.Id}
     p.Category = model.Categorys(conn)
     if err := etablishment.Parametre(conn); err != nil{

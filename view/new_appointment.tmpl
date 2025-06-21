@@ -226,10 +226,11 @@
                 <div class="checkbox-group">
                     {{range $index, $element := .Etablishment.Service}}
                     <div class="checkbox-wrapper">
-                        <input type="checkbox" id="{{$element.Id}}" name="service[{{$index}}][id]" {{if eq $element.Checked true}}checked{{end}} value="{{$element.Id}}" 
+                        <input type="checkbox" id="{{.Id}}" name="service[{{$index}}][id]" {{if eq .Checked true}}checked{{end}} value="{{.Id}}" 
                         class="form-checkbox" onclick="onServiceChange(this)">
-                        <label for="{{$element.Id}}" class="checkbox-label">{{$element.Name}} ({{.Price}})</label>
-                        <input type="number" name="service[{{$index}}][duration]" value="{{$element.Duration}}" class="hidden" />
+                        <label for="{{$element.Id}}" class="checkbox-label">{{.Name}} ({{.CurrencyPrice}})</label>
+                        <input type="number" name="service[{{$index}}][duration]" value="{{.Duration}}" class="hidden" />
+                        <input type="number" name="service[{{$index}}][price]" value="{{.Price}}" class="hidden" />
                     </div>
                     {{end}}
                 </div>

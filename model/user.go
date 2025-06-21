@@ -65,8 +65,9 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
 }
 
 func (u *User) Profile(conn *sql.Conn)error{
-    var town, postal, phone, lat, lon, picture sql.NullString
-    profileRow := conn.QueryRowContext(context.Background(), `SELECT firstname, lastname, email, town, postal, latitude, longitude, phone, picture, TO_CHAR(created_at, 'DD TMMonth YYYY') 
+    var town, postal, phone, picture sql.NullString
+	var lat, lon sql.NullFloat64
+    profileRow := conn.QueryRowContext(context.Background(), `SELECT firstname, lastname, email, town, postal, geolocation[0], geolocation[1], phone, picture, TO_CHAR(created_at, 'DD TMMonth YYYY') 
     FROM users WHERE id=$1`, u.Id)
     if err := profileRow.Scan(&u.Firstname, &u.Lastname, &u.Email, &town, &postal, &lat, &lon, &phone, &picture, &u.Joined); err != nil{
         log.Printf("error scaning the row: %s", err)
@@ -75,8 +76,8 @@ func (u *User) Profile(conn *sql.Conn)error{
     u.Town = town.String
     u.Postal = postal.String
     u.Phone = phone.String
-    u.Lat = lat.String
-    u.Lon = lon.String
+    u.Lat = lat.Float64
+    u.Lon = lon.Float64
     u.Picture = picture.String
     return nil
 }
@@ -84,7 +85,7 @@ func (u *User) Profile(conn *sql.Conn)error{
 func (u *User) Modify()error{
     conn := GetDBPoolConn()
     defer conn.Close()
-    modifyProfile, err := conn.ExecContext(context.Background(), `UPDATE users SET firstname=$1, lastname=$2, town=$3, postal=$4, phone=$5, latitude=$6, longitude=$7 WHERE id=$8`, 
+    modifyProfile, err := conn.ExecContext(context.Background(), `UPDATE users SET firstname=$1, lastname=$2, town=$3, postal=$4, phone=$5, geolocation=POINT($6,$7) WHERE id=$8`, 
     u.Firstname, u.Lastname, u.Town, u.Postal, u.Phone, u.Lat, u.Lon, u.Id)
     if err != nil{
         log.Printf("error in the query: %s", err)

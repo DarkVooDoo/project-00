@@ -13,10 +13,6 @@ type Store struct{
     DayIndex int
 }
 
-const (
-    EntrepriseCookie = "eid"
-)
-
 var StoreHandler http.Handler = &Store{}
 
 func (s Store) ServeHTTP(w http.ResponseWriter, r *http.Request){

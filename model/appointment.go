@@ -14,6 +14,7 @@ import (
 type ServicePayload struct{
     Id string `json:"id"`
     Duration int `json:"duration,string"`
+	Price float64 `json:"price,string"`
 }
 
 type Appointment struct{
@@ -67,7 +68,7 @@ func (a *Appointment) EmployeePlanning(conn *sql.Conn)[]Appointment{
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
 	(SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), a.status 
 	FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN users AS u ON u.id=a.user_id 
-    WHERE a.employee_id=$1 AND TO_CHAR(LOWER(a.date), 'YYYY-MM-DD') = $2 ORDER BY LOWER(a.date) ASC `, a.EmployeeId, a.Date)
+    WHERE a.employee_id=$1 AND TO_CHAR(LOWER(a.date), 'YYYY-MM-DD') = $2 AND a.status='Confirmé' ORDER BY LOWER(a.date) ASC `, a.EmployeeId, a.Date)
     if err != nil{
         log.Printf("error in the query %s", err)
         return planningList
@@ -92,9 +93,11 @@ func (a *Appointment) Create()error{
     defer conn.Close()
 
     var totalDuration int
+	var totalPrice float64
     for _, v := range a.Services{
         if v.Id != ""{
             totalDuration += v.Duration
+			totalPrice += v.Price
         }
     }
     tx, err := conn.BeginTx(context.Background(), &sql.TxOptions{})
@@ -104,7 +107,7 @@ func (a *Appointment) Create()error{
         return errors.New("error tx")
     }
 
-    appointmentRow := tx.QueryRow(`INSERT INTO appointment("date", status, user_id, etablishment_id, employee_id) VALUES(TSRANGE($1::TIMESTAMP, $1::TIMESTAMP + $2::INTERVAL),$3,$4,$5,$6) RETURNING id`, a.Date, fmt.Sprintf("%d minute", totalDuration), "Confirmé", a.UserId, a.EtablishmentId, a.EmployeeId)
+    appointmentRow := tx.QueryRow(`INSERT INTO appointment("date", total, status, user_id, etablishment_id, employee_id) VALUES(TSRANGE($1::TIMESTAMP, $1::TIMESTAMP + $2::INTERVAL),$3,$4,$5,$6,$7) RETURNING id`, a.Date, fmt.Sprintf("%d minute", totalDuration), totalPrice, "Confirmé", a.UserId, a.EtablishmentId, a.EmployeeId)
     if err = appointmentRow.Scan(&a.Id); err != nil{
         log.Printf("error scanning appointment: %s", err)
         tx.Rollback()
@@ -146,7 +149,7 @@ func (a *Appointment) UserNextAppointment(conn *sql.Conn) error{
 
 func (a *Appointment) UserAllAppointment(conn *sql.Conn)(appointmentList []Appointment){
     appointmentRow, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, et.id,
-    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), a.total,
     (SELECT array_to_string(array_agg(s.name), ', ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     (SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     a.status FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id 
@@ -167,7 +170,7 @@ func (a *Appointment) UserAllAppointment(conn *sql.Conn)(appointmentList []Appoi
 
 func (a *Appointment) UserAllForegoingAppointment(conn *sql.Conn)(appointmentList []Appointment){
     appointmentRow, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, et.id,
-    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), a.total,
     (SELECT array_to_string(array_agg(s.name), ', ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     (SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     a.status FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN employee AS e ON e.id=a.employee_id 
@@ -187,7 +190,7 @@ func (a *Appointment) UserAllForegoingAppointment(conn *sql.Conn)(appointmentLis
 
 func (a *Appointment) UserAllCancelledAppointment(conn *sql.Conn)(appointmentList []Appointment){
     appointmentRow, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, et.id,
-    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), a.total,
     (SELECT array_to_string(array_agg(s.name), ', ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     a.status FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id 
     LEFT JOIN employee AS e ON e.id=a.employee_id LEFT JOIN users AS u ON u.id=e.user_id WHERE a.user_id=$1 AND a.status = 'Annulé' ORDER BY LOWER(a.date) DESC LIMIT 5 `, a.UserId)
@@ -223,11 +226,24 @@ func (a *Appointment) UserAllUpcommingAppointment(conn *sql.Conn)(appointmentLis
     return 
 }
 
+func (a *Appointment) Complete(conn *sql.Conn) error{
+	result, err := conn.ExecContext(context.Background(), `UPDATE appointment SET status='Terminé' WHERE id=$1 AND employee_id=$2 OR id=$1 AND etablishment_id=$3`, a.Id, a.EmployeeId, a.EtablishmentId)
+	if err != nil{
+		log.Printf("error executing query: %s", err)
+		return errors.New("error in the query")
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil || rowsAffected == 0{
+		log.Printf("error no row affected: %s", err)
+		return errors.New("no rows affected")
+	}
+	return nil
+}
+
 func (a *Appointment) GetFull (conn *sql.Conn)(customer User, allEmployee []Employe, allService []Service, availebleDates []string,  err error){
     var serviceTaken []string
-    //TODO: Marqué tout les services déjà pris
     appointmentRow := conn.QueryRowContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, eu.firstname || ' ' || eu.lastname, COALESCE(u.phone, 'N/A'), u.email, 
-    LOWER(a.date), TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    LOWER(a.date), TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY'), a.total,
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     (SELECT array_agg(s.id) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
     a.user_id, a.employee_id, a.etablishment_id, a.status FROM appointment AS a LEFT JOIN users AS u ON u.id=a.user_id 
@@ -264,7 +280,7 @@ func (a *Appointment) Delete()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    result, err := conn.ExecContext(context.Background(), `UPDATE appointment SET status='Annulé' WHERE id=$2 AND user_id=$1`, a.UserId, a.Id)
+    result, err := conn.ExecContext(context.Background(), `UPDATE appointment SET status='Annulé' WHERE id=$2 AND user_id=$1 OR id=$2 AND employee_id=$3`, a.UserId, a.Id, a.EmployeeId)
     if err != nil{
         log.Printf("error in the query delete appointment: %s", err)
         return errors.New("error deleteting appointment")
@@ -280,7 +296,7 @@ func (a *Appointment) EtablishmentUpcomingAppointments(conn *sql.Conn)[]Appointm
 
     var list []Appointment
     aList, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, c.name,
-    TO_CHAR(LOWER(a.date), 'TMDay DD à HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)
     FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN category AS c ON c.id=et.category_id 
     LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND a.status = 'Confirmé' ORDER BY LOWER(a.date) ASC`, a.EtablishmentId)
@@ -302,7 +318,7 @@ func (a *Appointment) EtablishmentForegoingAppointments(conn *sql.Conn)[]Appoint
     var list []Appointment
 
     aList, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, c.name,
-    TO_CHAR(LOWER(a.date), 'TMDay DD à HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), a.total,
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)
     FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN category AS c ON c.id=et.category_id
     LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND a.status = 'Terminé'  ORDER BY LOWER(a.date) DESC`, a.EtablishmentId)

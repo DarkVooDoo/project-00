@@ -1,3 +1,5 @@
+CREATE EXTENSION btree_gist;
+
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     firstname VARCHAR(40) NOT NULL,
@@ -6,16 +8,13 @@ CREATE TABLE users (
     phone VARCHAR,
     town VARCHAR,
     postal VARCHAR(6),
-    latitude VARCHAR(10),
-    longitude VARCHAR(10),
+    geolocation POINT,
     email VARCHAR(50) UNIQUE NOT NULL,
     picture TEXT,
     salt INT NOT NULL,
     confirmed BOOL DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW()
 );
-
-CREATE INDEX idx_email ON users (email);
 
 CREATE TABLE category (
     id SERIAL PRIMARY KEY,
@@ -33,14 +32,15 @@ CREATE TABLE etablishment (
     adresse VARCHAR(150) NOT NULL,
     postal INT NOT NULL,
     payment payment_type[],
-    lat NUMERIC,
-    lon NUMERIC,
+    geolocation POINT,
     schedule JSONB,
     instagram VARCHAR(30),
     created_at date DEFAULT NOW(),
     user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
     category_id INT REFERENCES category(id)
 );
+
+CREATE INDEX idx_name ON etablishment(name);
 
 CREATE TABLE service (
     id BIGSERIAL PRIMARY KEY,
@@ -68,11 +68,12 @@ CREATE TYPE appointment_status AS ENUM ('Confirmé', 'Terminé', 'Annulé');
 CREATE TABLE appointment (
     id BIGSERIAL PRIMARY KEY,
     "date" TSRANGE,
+    total MONEY,
     status appointment_status,
     user_id BIGINT REFERENCES users(id),
     etablishment_id BIGINT REFERENCES etablishment(id),
     employee_id BIGINT REFERENCES employee(id),
-    EXCLUDE USING GIST (date WITH &&)
+    EXCLUDE USING GIST (date WITH &&, employee_id WITH =) WHERE (status != 'Confirmé')
 );
 
 CREATE TABLE appointment_service(
