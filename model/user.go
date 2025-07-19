@@ -23,7 +23,7 @@ type CacheNavbar struct{
 	Etablishment []KeyValue
 }
 
-var navbarCache = make(map[int]CacheNavbar)
+var navbarCache = make(map[int64]CacheNavbar)
 
 func (u *User) Create() error{
     conn := GetDBPoolConn()

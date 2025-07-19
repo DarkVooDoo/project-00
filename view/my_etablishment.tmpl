@@ -1,5 +1,5 @@
 {{define "Head"}}
-    <title>Ay mi amigo</title>
+    <title>{{.Etablishment.Name}}</title>
     <link href="/static/my_etablishment.css" rel="stylesheet" >
 {{end}}
 
@@ -10,37 +10,127 @@
             <h1 id="header-title">{{.Etablishment.Name}}</h1>
             <div class="command">
                 <a class="btn btn-primary" href="/etablissement/creer">Nouveau</a>
-                <a class="btn btn-outline" href="/etablissement/parametre">
-                    <svg class="icon" viewBox="0 0 21 20" fill="none">
-                    <path d="M7.3 20L6.9 16.8C6.68333 16.7167 6.47933 16.6167 6.288 16.5C6.096 16.3833 5.90833 16.2583 5.725 16.125L2.75 17.375L0 12.625L2.575 10.675C2.55833 10.5583 2.55 10.4457 2.55 10.337V9.662C2.55 9.554 2.55833 9.44167 2.575 9.325L0 7.375L2.75 2.625L5.725 3.875C5.90833 3.74167 6.1 3.61667 6.3 3.5C6.5 3.38333 6.7 3.28333 6.9 3.2L7.3 0H12.8L13.2 3.2C13.4167 3.28333 13.621 3.38333 13.813 3.5C14.0043 3.61667 14.1917 3.74167 14.375 3.875L17.35 2.625L20.1 7.375L17.525 9.325C17.5417 9.44167 17.55 9.554 17.55 9.662V10.337C17.55 10.4457 17.5333 10.5583 17.5 10.675L20.075 12.625L17.325 17.375L14.375 16.125C14.1917 16.2583 14 16.3833 13.8 16.5C13.6 16.6167 13.4 16.7167 13.2 16.8L12.8 20H7.3ZM10.1 13.5C11.0667 13.5 11.8917 13.1583 12.575 12.475C13.2583 11.7917 13.6 10.9667 13.6 10C13.6 9.03333 13.2583 8.20833 12.575 7.525C11.8917 6.84167 11.0667 6.5 10.1 6.5C9.11667 6.5 8.28733 6.84167 7.612 7.525C6.93733 8.20833 6.6 9.03333 6.6 10C6.6 10.9667 6.93733 11.7917 7.612 12.475C8.28733 13.1583 9.11667 13.5 10.1 13.5ZM10.1 11.5C9.68333 11.5 9.32933 11.354 9.038 11.062C8.746 10.7707 8.6 10.4167 8.6 10C8.6 9.58333 8.746 9.22933 9.038 8.938C9.32933 8.646 9.68333 8.5 10.1 8.5C10.5167 8.5 10.871 8.646 11.163 8.938C11.4543 9.22933 11.6 9.58333 11.6 10C11.6 10.4167 11.4543 10.7707 11.163 11.062C10.871 11.354 10.5167 11.5 10.1 11.5ZM9.05 18H11.025L11.375 15.35C11.8917 15.2167 12.371 15.0207 12.813 14.762C13.2543 14.504 13.6583 14.1917 14.025 13.825L16.5 14.85L17.475 13.15L15.325 11.525C15.4083 11.2917 15.4667 11.0457 15.5 10.787C15.5333 10.529 15.55 10.2667 15.55 10C15.55 9.73333 15.5333 9.47067 15.5 9.212C15.4667 8.954 15.4083 8.70833 15.325 8.475L17.475 6.85L16.5 5.15L14.025 6.2C13.6583 5.81667 13.2543 5.49567 12.813 5.237C12.371 4.979 11.8917 4.78333 11.375 4.65L11.05 2H9.075L8.725 4.65C8.20833 4.78333 7.72933 4.979 7.288 5.237C6.846 5.49567 6.44167 5.80833 6.075 6.175L3.6 5.15L2.625 6.85L4.775 8.45C4.69167 8.7 4.63333 8.95 4.6 9.2C4.56667 9.45 4.55 9.71667 4.55 10C4.55 10.2667 4.56667 10.525 4.6 10.775C4.63333 11.025 4.69167 11.275 4.775 11.525L2.625 13.15L3.6 14.85L6.075 13.8C6.44167 14.1833 6.846 14.504 7.288 14.762C7.72933 15.0207 8.20833 15.2167 8.725 15.35L9.05 18Z" fill="var(--text-color)"/>
-                    </svg>
-                </a>
             </div>
         </div>
         <div class="navigation">
-            <a href="/etablissement" data-check="true" class="btn">Rendez-vous</a>
-            <button type="button" class="btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/service" hx-target="#content">Prestation</button>
-            <button type="button" class="btn" onclick="onChangeNavigation(this)" hx-get="/schedule" hx-target="#content">Horaire</button>
-            <button type="button" class="btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/employee" hx-target="#content">Employée</button>
+            <a href="/etablissement" class="nav-btn selected">Tableau de bord</a>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)">Rendez-vous</button>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/service" hx-target="#content">Services</button>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/schedule" hx-target="#content">Horaire</button>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/employee" hx-target="#content">Employées</button>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/parametre" hx-target="#content">Parametre</button>
         </div>
 
         <div id="content">
+            <section class="dashboard-card">
+              <div class="dashboard-card-header">
+                  <h2 class="header-title">Revenues</h2>
+                  <div class="header-action">
+                    <button type="button" class="header-btn">Week</button>
+                    <button type="button" class="header-btn selected">Mois</button>
+                    <button type="button" class="header-btn">Année</button>
+                  </div>
+                </div>
+              <div class="gains">
+                  <div class="scale">
+                    <div class="rect" style="height:100px;"></div>
+                    <a href="#1" style="text-align:center;">Janvier</a>
+                  </div>
+                  <div class="scale">
+                    <div class="rect" style="height: 150px;"></div>
+                    <a href="#2" style="text-align:center;">Fevrier</a>
+                  </div>
+                  <div class="scale">
+                    <div class="rect" style="height: 70px;"></div>
+                    <a href="#3" style="text-align:center;">Mars</a>
+                  </div>
+                  <div class="scale">
+                    <div class="rect" style="height: 250px;">
+                      <span class="amount">220.5k</span>
+                    </div>
+                    <a href="#4" style="text-align:center;">Avril</a>
+                  </div>
+                  <div class="scale">
+                    <div class="rect" style="height: 20px;">
+                      <span class="amount">220.5k</span>
+                    </div>
+                    <a href="#5" style="text-align:center;">Mai</a>
+                  </div>
+                  <div class="scale">
+                    <div class="rect" style="height: 50px;">
+                      <span class="amount">22.5k</span>
+                    </div>
+                    <a href="#6" style="text-align:center;">Juin</a>
+                  </div>
+              </div>
+            </section>
+            <div class="infos">
+              <section class="dashboard-card">
+                <div class="dashboard-card-header">
+                  <h2 class="header-title">Performance</h2>
+                  <div class="header-action">
+                    <button type="button" class="header-btn">Week</button>
+                    <button type="button" class="header-btn">Mois</button>
+                    <button type="button" class="header-btn selected">Year</button>
+                  </div>
+                </div>
+                {{range .TopEmployee}}
+                    <div class="employee-perf">
+                        {{with .Picture}}
+                            <img src="{{.Picture}}" />
+                        {{else}}
+                            <div class="preview">{{.ShortName}}</div>
+                        {{end}}
+                        <div class="content">
+                            <h3 class="name">{{.Name}}</h3>
+                            <span class="title">Barber</span>
+                        </div>
+                        <div class="numbers">{{.TotalClient}} Clients</div>
+                    </div>
+                {{end}}
+              </section>
+              <section class="dashboard-card">
+                <div class="dashboard-card-header">
+                  <h2 class="header-title">Rendez-vous d'aujourd'hui</h2>
+                  <div>
+                    <a href="#">Tout</a>
+                  </div>
+                </div>
+
+                {{range .TodayAppointment}}
+                <div class="dashboard-appointment">
+                    <div class="preview">JD</div>
+                    <div class="content">
+                        <h3 class="name">{{.CustomerName}}</h3>
+                        <span class="title">{{.Service}}</span>
+                    </div>
+                    <div class="numbers">{{.Date}}</div>
+                </div>
+                {{else}}
+                    <div class="no-data">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 13L14 17M14 13L10 17M3 9H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                        <h3>Aucun rendez-vous aujourd'hui</h3>
+                        <p>Votre agenda est libre pour la journée. Profitez de ce temps pour vous reposer ou planifier vos prochains rendez-vous.</p>
+                    </div>
+                {{end}}
+              </section>
+            </div>
+            {{/*
+
             <div class="appointment-status">
                 <button type="button" class="appointmentBtn tab_selected" onclick="onTabClick(this)" hx-get="/etablissement/{{.User.Etablishment}}/rendez-vous?type=latest" hx-target="#appointment-cards">A Venir</button>
                 <button type="button" class="appointmentBtn" onclick="onTabClick(this)" hx-get="/etablissement/{{.User.Etablishment}}/rendez-vous?type=oldest" hx-target="#appointment-cards">Passée</button>
             </div>
             <div id="appointment-cards">
-                {{range .Appointment}}
-                    {{template "AppointmentCard" .}}
-                {{end}}
             </div>
+            */}}
         </div>
     </div>
 
     <script>
 
         let fetchTimeout
-        const navigation = document.querySelectorAll(".navigation .btn")
+        const navigation = document.querySelectorAll(".navigation .nav-btn")
         const newEtablishment = document.getElementById("new-etablishment")
         const appointment_tabs = document.querySelectorAll(".appointmentBtn")
         const locationSuggest = document.getElementById("location-suggest")
@@ -83,31 +173,9 @@
 
         const onChangeNavigation = (ele)=>{
             for(const n of navigation){
-                n.removeAttribute("data-check")
+                n.classList.remove("selected")
             }
-            ele.setAttribute("data-check", "true")
-        }
-
-        const onDeleteShift = (ele)=>{
-            const schedule = ele.closest(".day")
-            schedule.querySelector("[name='from']").value = ""
-            schedule.querySelector("[name='to']").value = ""
-        }
-
-        const onCopyShift = (ele)=>{
-
-            const fromInputs = document.querySelectorAll("[name='from']")
-            const toInputs = document.querySelectorAll("[name='to']")
-            const shift = ele.closest(".day")
-            const from = shift.querySelector("[name='from']")
-            const to = shift.querySelector("[name='to']")
-
-            for(const f of fromInputs){
-                f.value = from.value
-            }
-            for(const t of toInputs){
-                t.value = to.value
-            }
+            ele.classList.add("selected")
         }
 
         const onCreateService = (ele)=>{
@@ -160,6 +228,22 @@
                 `)
                 htmx.process(document.body)
             }
+        }
+
+        const onTimeChange = (ele)=>{
+            const parentElement = ele.closest(".shift")
+            const openTime = parentElement.dataset.open
+            const closeTime = parentElement.dataset.close
+            
+            const openTimeValue = parentElement.querySelector(".ot").value
+            const closeTimeValue = parentElement.querySelector(".ct").value
+            
+            if(openTimeValue !== openTime || closeTimeValue !== closeTime){
+                parentElement.querySelector(".updateBtn").classList.remove("hidden")
+            }else{
+                parentElement.querySelector(".updateBtn").classList.add("hidden")
+            }
+
         }
 
         const onEmployeSelected = (ele)=>{

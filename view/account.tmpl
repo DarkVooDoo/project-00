@@ -137,7 +137,7 @@
                 <button type="button" class="proBtn">Devenir Pro</button>
             </div>
         </form>
-        <form hx-post="/compte" id="information-form" hx-swap="none" hx-ext="json-enc-custom">
+        <form hx-post="/compte" id="information-form" hx-swap="none" hx-ext="json-enc-custom" hx-disabled-elt="find .submitBtn">
             <div class="field">
                 <label class="label" for="lastname">Nom</label>
                 <input type="text" name="lastname" id="lastname" class="input" value="{{.Profile.Lastname}}" autocomplete="off" />

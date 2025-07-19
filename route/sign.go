@@ -12,7 +12,7 @@ type Sign struct{
     User model.UserClaim
 }
 
-var SigninHandler http.Handler = &Sign{}
+var SigninHandler http.Handler = Sign{}
 
 func (s Sign) ServeHTTP(w http.ResponseWriter, r *http.Request){
     switch r.Method{

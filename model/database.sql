@@ -33,11 +33,18 @@ CREATE TABLE etablishment (
     postal INT NOT NULL,
     payment payment_type[],
     geolocation POINT,
-    schedule JSONB,
     instagram VARCHAR(30),
     created_at date DEFAULT NOW(),
     user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
     category_id INT REFERENCES category(id)
+);
+
+CREATE TABLE schedule(
+    id BIGSERIAL NOT NULL PRIMARY KEY,
+    day INT NOT NULL CHECK(day BETWEEN 0 AND 6),
+    open_time TIME NOT NULL,
+    close_time TIME NOT NULL,
+    etablishment_id BIGINT REFERENCES etablishment(id)
 );
 
 CREATE INDEX idx_name ON etablishment(name);
@@ -58,6 +65,7 @@ CREATE TABLE employee (
     id BIGSERIAL PRIMARY KEY,
     schedule JSONB,
     role employee_role,
+    joined DATE DEFAULT NOW(),
     etablishment_id BIGINT REFERENCES etablishment(id),
     user_id BIGINT REFERENCES users(id),
     CONSTRAINT unique_etablishment_employee UNIQUE(etablishment_id, user_id)
@@ -82,6 +90,16 @@ CREATE TABLE appointment_service(
     PRIMARY KEY(appointment_id, service_id) 
 );
 
+CREATE TABLE review (
+    id BIGSERIAL PRIMARY KEY NOT NULL,
+    comment TEXT,
+    rating INT CHECK(rating <= 5 AND rating >= 0),
+    created_at DATE DEFAULT NOW(),
+    etablishment_id BIGINT REFERENCES etablishment(id),
+    user_id BIGINT REFERENCES users(id),
+    employee_id BIGINT REFERENCES employee(id)
+);
+
 /*CREATE TABLE message (
   id BIGSERIAL PRIMARY KEY,
   msg text,
@@ -89,25 +107,6 @@ CREATE TABLE appointment_service(
   etablishment_id bigint,
   from_id bigint,
   to_id bigint
-);
-
-CREATE TABLE workday (
-  id BIGSERIAL PRIMARY KEY,
-  from time,
-  to time,
-  weekday int,
-  etablishment_id bigint
-);
-
-
-CREATE TABLE review (
-  id BIGSERIAL,
-  message text,
-  star int,
-  created_at date,
-  etablishment_id bigint,
-  user_id bigint,
-  employee_id bigint
 );
 
 */

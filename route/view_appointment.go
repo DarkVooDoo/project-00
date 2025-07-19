@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"planify/model"
-	"strings"
+	"regexp"
 )
 
 type ViewAppointmentRoute struct{
@@ -67,19 +67,11 @@ func (va ViewAppointmentRoute) Post(w http.ResponseWriter, r *http.Request){
 		DisplayNotification(Notitification{"Echoué", "requete impossible", "error"}, w)
 		return
 	}
-	temp, err := template.New("update appointment").Parse(`
-		<div class="status-badge completed" id="status-badge" hx-swap-oob="true">Terminé</div>
-	`)
-	if err != nil{
-		log.Printf("error parsing the template: %s", err)
-		return
-	}
-	temp.Execute(w, nil)
+	updatePage("Terminé", r.Referer(), w)
 	DisplayNotification(Notitification{"Reussi", "Rendez-vous terminé", "success"}, w)
 }
 
 func (a ViewAppointmentRoute) Delete(w http.ResponseWriter, r *http.Request){
-
     var user model.UserClaim
     if err := VerifyToken(r, w, &user); err != nil{
         log.Printf("error noauthorized")
@@ -87,12 +79,29 @@ func (a ViewAppointmentRoute) Delete(w http.ResponseWriter, r *http.Request){
     }
     appointment := model.Appointment{UserId: user.Id, EmployeeId: user.Employee, Id: r.PathValue("id")}
     if err := appointment.Delete(); err != nil{
-        http.Error(w, "bad request", http.StatusBadRequest)
+		DisplayNotification(Notitification{"Echoué", "Suppresion impossible", "error"}, w)
         return
     }
-    if !strings.HasSuffix(r.Referer(), "/planning"){
-        w.Header().Add("HX-Redirect", "/")
-		return
-    }
+
+	updatePage("Annulé", r.Referer(), w)
 	DisplayNotification(Notitification{"Reussi", "Rendez-vous annulé", "success"}, w)
+}
+
+func updatePage(t string, referer string, w http.ResponseWriter){
+	
+	isFullAppointment, _ := regexp.Match("/rendez-vous/[0-9]+$", []byte(referer))
+	if isFullAppointment{
+		var updateHtml string
+		if t == "Annulé"{
+			updateHtml = `<div class="status-badge cancelled" id="status-badge" hx-swap-oob="true">Annulé</div>`
+		}else{
+			updateHtml = `<div class="status-badge completed" id="status-badge" hx-swap-oob="true">Terminé</div>`
+		}
+		temp, err := template.New("update appointment").Parse(updateHtml)
+		if err != nil{
+			log.Printf("error parsing the template: %s", err)
+			return
+		}
+		temp.Execute(w, nil)
+	}
 }

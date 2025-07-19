@@ -31,6 +31,7 @@ func main(){
     mux.HandleFunc("/etablissement/{id}/rendez-vous/nouveau", route.NewAppointmentHandler.ServeHTTP)
     mux.HandleFunc("/planning", route.PlanningHandler.ServeHTTP)
     mux.HandleFunc("/schedule", route.ScheduleHandler.ServeHTTP)
+    mux.HandleFunc("/notification", route.ViewNotificationHandler.ServeHTTP)
     mux.HandleFunc("/etablissement", route.MyEtablishmentHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/parametre", route.ParametreHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/service", route.ServiceHandler.ServeHTTP)

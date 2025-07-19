@@ -16,7 +16,7 @@ type NewAppointment struct{
     User model.UserClaim
 	Navbar model.CacheNavbar
     Etablishment model.Etablishment
-    EmployeeId int `json:"employee,string"`
+    EmployeeId int64 `json:"employee,string"`
     Service []model.ServicePayload `json:"service"`
     Time string `json:"time"`
     Date string `json:"date"`
@@ -46,7 +46,7 @@ func (n NewAppointment) Get(w http.ResponseWriter, r *http.Request){
 	defer conn.Close()
 	n.Navbar = model.GetNavbarFromCache(conn, n.User)
 	id, _ := strconv.Atoi(r.PathValue("id"))
-    etablishment := model.Etablishment{Id: id}
+    etablishment := model.Etablishment{Id: int64(id)}
     etablishment.GetEmployeeAndService(conn)
 	autofill := r.URL.Query().Get("s")
 	if autofill != ""{
@@ -54,7 +54,7 @@ func (n NewAppointment) Get(w http.ResponseWriter, r *http.Request){
 		for index, v := range etablishment.Service{
 			for _, cId := range serviceIds{
 				idChecked, _ := strconv.Atoi(cId)
-				if v.Id == idChecked{
+				if v.Id == int64(idChecked){
 					etablishment.Service[index].Checked = true
 				}
 			}
@@ -81,7 +81,7 @@ func (n NewAppointment) Post(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
-    var newAppointment model.Appointment = model.Appointment{EmployeeId: n.EmployeeId, Date: fmt.Sprintf("%s %s", n.Date, n.Time), UserId: n.User.Id, Services: n.Service, EtablishmentId: etablishmentId}
+    var newAppointment model.Appointment = model.Appointment{EmployeeId: n.EmployeeId, Date: fmt.Sprintf("%s %s", n.Date, n.Time), UserId: n.User.Id, Services: n.Service, EtablishmentId: int64(etablishmentId)}
     if err := newAppointment.Create(); err != nil{
         DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w)
         return
@@ -100,7 +100,7 @@ func (n NewAppointment) Put(w http.ResponseWriter, r *http.Request){
     defer conn.Close()
 
 	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
-    appointment := model.Appointment{UserId: n.User.Id, EmployeeId: n.EmployeeId, Date: n.Date, EtablishmentId: etablishmentId}
+    appointment := model.Appointment{UserId: n.User.Id, EmployeeId: n.EmployeeId, Date: n.Date, EtablishmentId: int64(etablishmentId)}
     hours := appointment.AvaileblesDates(conn)
     temp, err := template.New("test").Parse(`
 		{{range $index, $value := .}}

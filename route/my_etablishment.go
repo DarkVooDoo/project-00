@@ -11,7 +11,8 @@ type MyEtablishmentRoute struct{
     User model.UserClaim
 	Navbar model.CacheNavbar
     Etablishment model.Etablishment
-    Appointment []model.Appointment
+    TodayAppointment []model.Appointment
+	TopEmployee []model.Employe
     Category []model.KeyValue
     CurrentEtablishment string
 }
@@ -36,9 +37,12 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
     }
     
 	etablishentId, err  := strconv.Atoi(r.URL.Query().Get("etablishment"))
+	var eId int64
 	if err != nil{
 		log.Printf("error converting the id to number: %s", err)
-		etablishentId = me.User.Etablishment
+		eId = me.User.Etablishment
+	}else{
+		eId = int64(etablishentId)
 	}
 
     conn := model.GetDBPoolConn()
@@ -46,7 +50,7 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
     
 	me.Navbar = model.GetNavbarFromCache(conn, me.User)
     me.Category = model.Categorys(conn)
-	me.User.Etablishment = etablishentId
+	me.User.Etablishment = eId
     etablishment := model.Etablishment{UserId: me.User.Id, Id: me.User.Etablishment}
 
     etablishment.UserEtablishment(conn)
@@ -56,13 +60,10 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-    //if len(list) == 0{
-    //    w.Header().Add("Location", "/etablissement/creer")
-    //    w.WriteHeader(http.StatusTemporaryRedirect)
-    //    return
-    //}
+	employee := model.Employe{EtablishmentId: me.User.Etablishment}
     appointment := model.Appointment{UserId: me.User.Id, EtablishmentId: me.User.Etablishment}
-    me.Appointment = appointment.EtablishmentUpcomingAppointments(conn)
+    me.TodayAppointment = appointment.EtablishmentTodayAppointments(conn)
+	me.TopEmployee = employee.TopEmployees(conn)
     if err := CreatePage(me, w, "view/page.html", "view/my_etablishment.tmpl", "view/component/AppointmentCard.tmpl"); err != nil{
         return
     }

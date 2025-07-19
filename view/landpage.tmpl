@@ -4,16 +4,16 @@
 <style>
 @import "/static/etablishment_card.css";
 .container{
-    max-width: 1000px;
+    max-width: 1200px;
     margin-inline: auto;
     .header{
         margin-block: 1rem;
         font-size: 1.2rem;
     }
     .etablishment{
-        display: flex;
+        display: grid;
         gap: 1rem;
-        flex-wrap: wrap;
+        grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
     }
 }
 </style>

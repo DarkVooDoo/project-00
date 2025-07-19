@@ -58,12 +58,12 @@ func (p PlanningPayload) Put(w http.ResponseWriter, r *http.Request){
 		log.Printf("error converting employee id to integer: %s", err)
 		return
 	}
-	employee := model.Employe{UserId: user.Id, Id: employeeId}
+	employee := model.Employe{UserId: user.Id, Id: int64(employeeId)}
 	if err := employee.VerifyUserEmployee(); err != nil{
 		log.Printf("error you are no employee here")
 		return
 	}
-	if err := model.CreateAccessToken(user.Id, user.ShortName, user.Picture, user.Etablishment, employeeId, w); err != nil{
+	if err := model.CreateAccessToken(user.Id, user.ShortName, user.Picture, user.Etablishment, int64(employeeId), w); err != nil{
 		log.Printf("error creating the token: %s", err)
 		return
 	}

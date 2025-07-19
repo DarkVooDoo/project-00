@@ -9,7 +9,7 @@ import (
 )
 
 type Service struct{
-    Id int `json:"id,string"`
+    Id int64 `json:"id,string"`
     Name string `json:"name"`
     Price string `json:"price"`
     Duration int `json:"duration,string"`
@@ -17,7 +17,7 @@ type Service struct{
 	Discount int `json:"discount,string"`
     Checked bool
     CurrencyPrice string
-    EtablishmentId int
+    EtablishmentId int64
 }
 
 func (s *Service) Create()error{

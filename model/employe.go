@@ -11,14 +11,16 @@ import (
 )
 
 type Employe struct{
-    Id int
+    Id int64
     Email string
     Name string `json:"name"`
     ShortName string
     Schedule EtablishmentSchedule
     Picture string
-    EtablishmentId int
-    UserId int
+	Joined string
+	TotalClient int
+    EtablishmentId int64
+    UserId int64
 }
 
 var logg *slog.Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -55,14 +57,14 @@ func (e Employe) VerifyUserEmployee() error{
 func (e *Employe) GetEtablishmentEmployees(conn *sql.Conn)[]Employe{
     var allEmployee []Employe
     var schedule sql.NullString
-    etablishmentEmployee, err := conn.QueryContext(context.Background(), `SELECT em.id, em.schedule, u.firstname || ' ' || u.lastname, LEFT(u.firstname, 1) || LEFT(u.lastname, 1) 
-    FROM etablishment AS e RIGHT JOIN employee AS em ON em.etablishment_id=e.id LEFT JOIN users AS u ON u.id=em.user_id WHERE e.id=$1`, e.EtablishmentId)
+    etablishmentEmployee, err := conn.QueryContext(context.Background(), `SELECT em.id, em.schedule, u.firstname || ' ' || u.lastname, LEFT(u.firstname, 1) || LEFT(u.lastname, 1),
+	AGE(TIMESTAMP em.joined) FROM etablishment AS e RIGHT JOIN employee AS em ON em.etablishment_id=e.id LEFT JOIN users AS u ON u.id=em.user_id WHERE e.id=$1`, e.EtablishmentId)
     if err != nil{
         logg.Error("error getting employees", "description", err)
         return allEmployee
     }
     for etablishmentEmployee.Next(){
-        if err = etablishmentEmployee.Scan(&e.Id, &schedule, &e.Name, &e.ShortName); err != nil{
+        if err = etablishmentEmployee.Scan(&e.Id, &schedule, &e.Name, &e.ShortName, &e.Joined); err != nil{
             logg.Info("error scanning row", "error scanning", err)
         }
         if schedule.Valid{
@@ -97,6 +99,25 @@ func (e Employe) UpdateSchedule(schedule SchedulePayload) error{
     return nil
 }
 
+func (e *Employe) TopEmployees(conn *sql.Conn)[]Employe{
+	var listEmployee []Employe
+
+	employeeRows, err := conn.QueryContext(context.Background(), `SELECT e.id, u.firstname || ' ' || u.lastname, COALESCE(u.picture, ''), UPPER(LEFT(u.firstname, 1)) || UPPER(LEFT(u.lastname, 1)),
+	(SELECT COUNT(a.id) FROM appointment AS a WHERE a.employee_id=e.id AND a.status='Confirmé') FROM employee AS e LEFT JOIN users AS u ON u.id=e.user_id WHERE e.etablishment_id=$1`, e.EtablishmentId)
+	if err != nil{
+		log.Printf("error in the query top employees: %s", err)
+		return listEmployee
+	}
+	for employeeRows.Next(){
+		if err := employeeRows.Scan(&e.Id, &e.Name, &e.Picture, &e.ShortName, &e.TotalClient); err != nil{
+			log.Printf("error scanning the top employees: %s", err)
+			continue
+		}
+		listEmployee = append(listEmployee, *e)
+	}
+	return listEmployee
+}
+
 func (e *Employe) Delete()error{
     conn := GetDBPoolConn()
     defer conn.Close()
@@ -118,7 +139,8 @@ func (e *Employe) SuggestEmployee()[]Employe{
     defer conn.Close()
 
     var list []Employe
-    employeList, err := conn.QueryContext(context.Background(), `SELECT id, email FROM users WHERE email LIKE $1 LIMIT 5`, e.Email + "%")
+    employeList, err := conn.QueryContext(context.Background(), `SELECT u.id, u.email FROM users AS u WHERE u.email LIKE $1 AND 
+	NOT EXISTS(SELECT 1 FROM employee AS e WHERE e.user_id = u.id AND e.etablishment_id=$2) LIMIT 5`, e.Email + "%", e.EtablishmentId)
     if err != nil{
         logg.Error("error searching user", "description", err)
         return list

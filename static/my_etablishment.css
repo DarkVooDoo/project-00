@@ -1,6 +1,7 @@
 @import "/static/appointment.css";
+@import "/static/parametre.css";
 .my-etablishment{
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 1rem auto;
     .header{
         display: flex;
@@ -20,44 +21,157 @@
                 align-items: center;
                 height: 2rem;
                 padding-inline: .5rem;
-                .icon{
-                    width: 1.5rem;
-                    aspect-ratio: 1/1;
-                }
             }
         }
 
     }
+    .navigation::-webkit-scrollbar {
+        display: none;
+    }
     .navigation{
-        display: inline-flex;
-        padding-bottom: 1rem;
+        display: flex;
         overflow-x: scroll;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-        &::-webkit-scrollbar{
-            display: none;
+        width: 100%;
+        border-radius: 25px;
+        margin-block: 1rem;
+        text-wrap-mode: nowrap;
+        background-color: var(--card-color);
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+        box-shadow: var(--card-shadow);
+        .nav-btn{
+            line-height: 2.5rem;
+            padding-inline: 1rem;
+            border: none;
+            border-radius: 25px;
+            background-color: transparent;
+            cursor: pointer;
         }
-        .btn{
-            position: relative;
-            line-height: 1.5rem;
-            color: #6F6F6F;
-            margin-right: 1rem;
-            text-wrap: nowrap;
-            &[data-check='true']{
-                &::after{
-                    content: "";
-                    position: absolute;
-                    bottom: -5px;
-                    left: 0px;
-                    width: 100%;
-                    height: 100%;
-                    border-bottom: 2px solid var(--primary-color);
-                    border-radius: 50%;
-                }
-            }
+        .nav-btn.selected{
+            background-color: var(--primary-color);
+            font-weight: 600;
+            color: white;
         }
     }
     #content{
+        container: info / inline-size;
+        .infos{
+            @container info (min-width: 1000px){
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(2, 1fr); 
+            }
+        }
+        .dashboard-card{
+            outline: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            background-color: var(--card-color);
+            .dashboard-card-header{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                line-height: 2.5rem;
+                margin-bottom: 1rem;
+                .header-title{
+                    font-size: 1.2rem;
+                }
+                .header-action{
+                    outline: 1px solid var(--border-color);
+                    border-radius: 25px;
+                    .header-btn{
+                        line-height: 2.5rem;
+                        padding-inline: 1rem;
+                        border-radius: 25px;
+                        cursor: pointer;
+                    }
+                    .header-btn.selected{
+                        background-color: var(--primary-color);
+                    }
+                }
+            }
+            .gains{
+                height: 300px;
+                width: 100%;
+                overflow-x: scroll;
+                display: flex;
+                gap: .5rem;
+                align-items: flex-end;
+                scrollbar-color: var(--text-color) var(--card-color);
+                .scale{
+                    width: 80px;
+                    display:flex;
+                    flex-direction:column;
+                    .rect{
+                        position: relative;
+                        border-radius: 5px;
+                        background-color: purple;
+                        width: 80px;
+                        transition: height 300ms linear;
+                        @starting-style{
+                            height: 0px;
+                        }
+                        .amount{
+                            position: absolute;
+                            top: -2.3rem;
+                            display: block;
+                            border-radius: 25px;
+                            width: 100%;
+                            line-height: 2rem;
+                            background-color: var(--border-color);
+                            text-align: center;
+
+                        }
+                    }
+                }
+            }
+            .employee-perf, .dashboard-appointment{
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                outline: 1px solid var(--border-color);
+                padding: .4rem;
+                border-radius: calc(.4rem + .5rem);
+                margin-bottom: .5rem;
+                .preview{
+                    height: 2.6rem;
+                    aspect-ratio: 1 / 1;
+                    border-radius: .5rem;
+                    outline: 1px solid var(--border-color);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .content{
+                    width: 100%;
+                    .name{
+                        font-size: 1.1rem;
+                    }
+                    .title{
+                        font-size: .9rem;
+                    }
+                }
+                .numbers{
+                    background-color: var(--border-color);
+                    line-height: 2.6rem;
+                    width: 8rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: calc(.5rem);
+                }
+            }
+            .dashboard-appointment{
+                grid-template-columns: .1fr 1.5fr .2fr;
+            }
+            .no-data{
+                text-align: center;
+                .icon{
+                    height: 3rem;
+                }
+            }
+        }
         .new_employee{
             display: grid;
             grid-template-columns: 1fr .2fr;
@@ -95,12 +209,15 @@
             }
         }
         .schedule{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, auto));
+            gap: 1rem;
             .day{
                 background-color: var(--card-color);
                 border-radius: 10px;
-                margin-bottom: 1rem;
                 padding: 10px;
                 box-shadow: var(--card-shadow);
+                width: 100%;
                 .description{
                     display: flex;
                     justify-content: space-between;
@@ -111,9 +228,23 @@
                     }
                     .close{
                         padding: 0;
-                        .icon{
-                            width: 1.5rem;
-                            aspect-ratio: 1/1;
+                    }
+                    .newShiftBtn{
+                        height: 1.5rem;
+                        aspect-ratio: 1/1;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        &::after, &::before{
+                            content: "";
+                            position: absolute;
+                            height: 1.5rem;
+                            width: 2px;
+                            border-radius: 25px;
+                            background-color: var(--text-color);
+                        }
+                        &::before{
+                            transform: rotate(90deg);
                         }
                     }
                 }
@@ -121,21 +252,22 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    margin-bottom: .8rem;
+                    gap: 1rem;
+                    &:last-child{
+                        margin-bottom: 0rem;
+                    }
                     .input{
-                        width: 8.5rem;
+                        width: 100%;
                         line-height: 2rem;
                         padding-inline: 5px;
                         border-radius: 5px;
                     }
                 }
             }
-            .btn{
-                float: right;
-                background-color: var(--primary-color);
-                border-radius: 5px;
-                font-weight: bold;
-                color: white;
-                line-height: 2rem;
+            .icon{
+                width: 1.5rem;
+                aspect-ratio: 1/1;
             }
         }
 
@@ -287,7 +419,6 @@
                 line-height: 2.5rem;
                 padding-inline: 10px;
                 border-radius: 25px;
-                outline: 1px solid var(--border-color);
             }
             .input:focus ~ #employe-sugg{
                 display: block;
@@ -295,12 +426,11 @@
             #employe-sugg{
                 display: none;
                 position: absolute;
-                top: 2.5rem;
+                top: 3rem;
                 left: 0;
                 width: 100%;
-                padding: 5px;
-                background-color: white;
-                border-radius: 5px;
+                background-color: var(--card-color);
+                outline: 1px solid var(--border-color);
                 z-index: 1;
                 &:hover{
                     display: block;
@@ -310,59 +440,58 @@
                     display: block;
                     width: 100%;
                     text-align: start;
+                    cursor: pointer;
+                    padding-inline: 10px;
+                    &:hover{
+                        background-color: var(--hover-color);
+                    }
                 }
             }
         }
-        .employe{
-            display: grid;
-            grid-template-columns: 2.1rem 1fr 2.1rem;
-            gap: .5rem;
-            border-bottom: 2px solid var(--border-color);
-            align-items: center;
-            line-height: 3rem;
-            .picture{
-                height: 2rem;
-                aspect-ratio: 1/1;
-                border-radius: 50%;
+        .employee-list{
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            container: card / inline-size;
+            .employee-card{
                 display: flex;
+                flex-direction: column;
                 align-items: center;
-                justify-content: center;
-            }
-            .element{
-                position: relative;
-                display: flex;
-                .moreBtn{
-                    height: 2rem;
-                    padding: 0;
-                    .icon{
-                        height: 2rem;
-                        aspect-ratio: 1/1;
-                    }
-                    &:focus + .popover{
-                        display: block;
-                        pointer-events: all;
-                    }
+                border-radius: 15px;
+                padding: 10px;
+                width: 100%;
+                background-color: var(--card-color);
+                box-shadow: var(--card-shadow);
+                @container card (width >= 600px){
+                    width: clamp(300px, calc(100% / 2 - 1rem), 750px);
                 }
-                .popover{
-                    display: none;
-                    pointer-events: none;
-                    margin: 0;
-                    border-radius: 5px;
-                    background-color: var(--card-color);
-                    outline: 1px solid var(--border-color);
-                    position: absolute;
-                    top: 2.2rem;
-                    right: 0;
-                    z-index: 1;
-                    line-height: 0;
-                    &:hover, &:focus-within{
-                        display: block;
-                        pointer-events: all;
-                    }
-                    .contentBtn{
-                        width: 100%;
-                        line-height: 2rem;
-                        padding-inline: 10px;
+                @container card (width >= calc(900px - 4rem)){
+                    width: clamp(calc(300px - 2rem), calc(100% / 3 - 1.35rem), 900px);
+                }
+                .picture{
+                    height: 4rem;
+                    aspect-ratio: 1/1;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: .5rem;
+                }
+                .name{
+                    font-size: 1.1rem;
+                }
+                .more{
+                    color: var(--text-color-helper);
+                }
+                .actions{
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 1rem;
+                    width: 100%;
+                    .actionBtn{
+                        line-height: 2.5rem;
+                        border-radius: 5px;
+                        padding-inline: 1rem;
                     }
                     .confirmation{
                         background-color: var(--card-color);
@@ -381,39 +510,40 @@
                         }
                     }
                 }
-            }
-            .employee-schedule{
-                width: 330px;
-                padding: 10px;
-                border-radius: 5px;
-                background-color: var(--card-color);
-                .day{
-                    display: grid;
-                    grid-template-columns: .8fr .9fr .2fr .9fr .2fr;
-                    gap: .4rem;
-                    margin-bottom: 1rem;
-                    line-height: 2rem;
-                    input{
-                        border-radius: 5px;
-                        padding-inline: 5px;
-                    }
-                    .resetBtn{
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        .icon{
-                            height: 1.5rem;
-                            aspect-ratio: 1/1;
+
+                .employee-schedule{
+                    width: 330px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    background-color: var(--card-color);
+                    .day{
+                        display: grid;
+                        grid-template-columns: .8fr .9fr .2fr .9fr .2fr;
+                        gap: .4rem;
+                        margin-bottom: 1rem;
+                        line-height: 2rem;
+                        input{
+                            border-radius: 5px;
+                            padding-inline: 5px;
+                        }
+                        .resetBtn{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            .icon{
+                                height: 1.5rem;
+                                aspect-ratio: 1/1;
+                            }
                         }
                     }
-                }
-                .btn{
-                    line-height: 2rem;
-                    background-color: var(--primary-color);
-                    color: white;
-                    font-weight: bold;
-                    border-radius: 5px;
-                    width: 100%;
+                    .btn{
+                        line-height: 2rem;
+                        background-color: var(--primary-color);
+                        color: white;
+                        font-weight: bold;
+                        border-radius: 5px;
+                        width: 100%;
+                    }
                 }
             }
         }

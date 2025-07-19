@@ -36,13 +36,13 @@ func (a Appointment) Get(w http.ResponseWriter, r *http.Request){
     defer conn.Close()
 
 	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
-    appointment := model.Appointment{EtablishmentId: etablishmentId}
+    appointment := model.Appointment{EtablishmentId: int64(etablishmentId)}
     var myAppointments []model.Appointment
     switch r.URL.Query().Get("type"){
         case "oldest":
             myAppointments = appointment.EtablishmentForegoingAppointments(conn)
         default:
-            myAppointments = appointment.EtablishmentUpcomingAppointments(conn)
+            //myAppointments = appointment.EtablishmentUpcomingAppointments(conn)
     }
 
     test, err := template.ParseGlob("view/component/AppointmentCard.tmpl")

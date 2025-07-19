@@ -1,2 +1,3 @@
 *.yml
+model/*.sql
 model/*_test.go

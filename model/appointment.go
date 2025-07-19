@@ -30,12 +30,12 @@ type Appointment struct{
     Contact string
     Status string
     Description string
-    UserId int
+    UserId int64
     Date string `json:"date"`
     Timeframe string
     FormatDate string
-    EmployeeId int `json:"employee,string"`
-    EtablishmentId int
+    EmployeeId int64 `json:"employee,string"`
+    EtablishmentId int64
 }
 
 type Appt struct{
@@ -131,6 +131,10 @@ func (a *Appointment) Create()error{
     if err = tx.Commit(); err != nil{
         log.Printf("error commiting the transction")
     }
+	//review := Review{UserId: a.UserId, EtablishmentId: a.EtablishmentId, EmployeeId: a.EmployeeId}
+	//if err := review.Create(conn); err != nil{
+	//	log.Printf("error creating the pending review: %s", err)
+	//}
     return nil
 }
 
@@ -246,11 +250,12 @@ func (a *Appointment) GetFull (conn *sql.Conn)(customer User, allEmployee []Empl
     LOWER(a.date), TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY'), a.total,
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
     (SELECT array_agg(s.id) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+	(SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
     a.user_id, a.employee_id, a.etablishment_id, a.status FROM appointment AS a LEFT JOIN users AS u ON u.id=a.user_id 
     LEFT JOIN employee AS e ON e.id=a.employee_id LEFT JOIN users AS eu ON eu.id=e.user_id WHERE a.id=$1 AND a.user_id=$2 OR a.id=$1 AND a.employee_id=$3`, a.Id, a.UserId, a.EmployeeId)
 
     if err := appointmentRow.Scan(&a.Id, &a.CustomerName, &a.EmployeeName, &customer.Phone, &customer.Email, &a.Date, &a.FormatDate, &a.Price, &a.Service, pq.Array(&serviceTaken), 
-    &a.UserId, &a.EmployeeId, &a.EtablishmentId, &a.Status); err != nil{
+    &a.ServiceTook, &a.UserId, &a.EmployeeId, &a.EtablishmentId, &a.Status); err != nil{
         log.Printf("error scanning the row Appointment: %s", err)
         return customer, allEmployee, allService, availebleDates, errors.New("error getting the appointment")
     }
@@ -260,7 +265,7 @@ func (a *Appointment) GetFull (conn *sql.Conn)(customer User, allEmployee []Empl
     for i, s := range allService{
         for _, st := range serviceTaken{
 			id, _ := strconv.Atoi(st)
-            if s.Id == id{
+            if s.Id == int64(id){
                 allService[i].Checked = true
                 break
             }
@@ -292,14 +297,14 @@ func (a *Appointment) Delete()error{
     return nil
 }
 
-func (a *Appointment) EtablishmentUpcomingAppointments(conn *sql.Conn)[]Appointment{
+func (a *Appointment) EtablishmentTodayAppointments(conn *sql.Conn)[]Appointment{
 
     var list []Appointment
     aList, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, c.name,
-    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    TO_CHAR(LOWER(a.date), 'HH24:MI'), (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
     (SELECT array_to_string(array_agg(s.name), ' - ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)
     FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN category AS c ON c.id=et.category_id 
-    LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND a.status = 'Confirmé' ORDER BY LOWER(a.date) ASC`, a.EtablishmentId)
+	LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND a.status = 'Confirmé' AND LOWER(a.date)::DATE = NOW()::DATE ORDER BY LOWER(a.date) ASC`, a.EtablishmentId)
 
     if err != nil{
         log.Printf("Error in the query: %s", err)

@@ -1,10 +1,8 @@
 package model
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
-	"strings"
+	"regexp"
 	"testing"
 )
 
@@ -12,20 +10,15 @@ type Navigation struct{
 	Employee []string
 }
 
-func TestCache(t *testing.T){
+func TestPath(t *testing.T){
 
-	id := "22"
-	data := Navigation{Employee: []string{"Hello", "World"}}
-	var output Navigation
-	payload, err := json.Marshal(data)
+	referer := "http://localhost:8000/rendez-vous/45"
+	isOk, err := regexp.Match("/rendez-vous/[0-9]+$", []byte(referer))
 	if err != nil{
-		t.Fatalf("error json marshal")
+		t.Fatalf("error in the regex: %s", err)
 	}
-	cache := fmt.Sprintf("%s=%s", id, payload)
-	index := strings.Index(cache, "=")
-	if err := json.Unmarshal([]byte(cache[index+1:]), &output); err != nil{
-		t.Fatalf("error unmashing the json: %s", err)
+	if !isOk{
+		log.Printf("error no match")
 	}
-	log.Println(output)
 }
 

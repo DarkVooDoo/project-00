@@ -4,8 +4,8 @@
 {{end}}
 
 {{define "Body"}}
-    {{$today := .DayIndex}}
     {{$open := .Etablishment.IsOpen}}
+    {{$schedule := .Etablishment.Schedule}}
     <div class="container">
         <div class="etablishment">
             <div class="photo"></div>
@@ -25,7 +25,9 @@
                 </div>
                 {{if .Etablishment.Phone}}
                     <div class="metadata">
-                        <img src="/static/telephone.svg" class="icon" />
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
                         <p>{{.Etablishment.Phone}}</p>
                     </div>
                 {{end}}
@@ -54,15 +56,22 @@
                 <p class="title-helper">Information sur les horaires de ouvertures</p>
             </div>
             <div class="shifts">
-                {{range $index, $value := .Etablishment.Schedule}}
-                    <div class="schedule-card {{if and (eq $index $today) (eq $open "Actuellement Ouvert")}}open{{end}} {{if and (eq $open "Actuellement Fermé") (eq $index $today)}}close{{end}}">
-                        <b class="label">{{$value.Day}} {{if eq $index $today}}- <b class="status">{{$open}}</b>{{end}}</b>
-                        <p class="text">{{$value.Time}}</p>
+                {{range $i, $v := .Week}}
+                <div class="schedule-card">
+                    <div class="label">
+                        <b class="dayName">{{.}}</b>
+                        <b data-label="is its open currently"></b>
                     </div>
-                {{else}}
-                    <div>
-                        <h1>Les horaires pour ce etablissement n'a pas été encore publié</h1>
+                    <div class="shifts">
+                    {{range $index, $value := $schedule}}
+                        {{if eq $i $value.Day}}
+                            <b class="text">{{.OpenTime}} - <b class="status">{{.CloseTime}}</b></b>
+                        {{end}}
+                    {{else}}
+                        <h2>L'établissement n'a pas encore publier ses horaires</h2>
+                    {{end}}
                     </div>
+                </div>
                 {{end}}
             </div>
         </section>
@@ -122,20 +131,27 @@
         <h1 class="section_name">Avis</h1>
         <section class="review">
             {{/* Max 3 Avis */}}
-            <div class="review-card">
-                <div class="user">
-                    <h1 class="name">John Doe</h1>
-                    <p class="date">22/04/2022</p>
-                    <div class="rating">
-                        <img src="/static/starfill.svg" class="star" />
-                        <img src="/static/starfill.svg" class="star" />
-                        <img src="/static/starfill.svg" class="star" />
-                        <img src="/static/star.svg" class="star" />
-                        <img src="/static/star.svg" class="star" />
+            {{range .Etablishment.Review}}
+                <div class="review-card">
+                    <div class="user">
+                        <h1 class="name">{{.UserName}}</h1>
+                        <p class="date">{{.Date}}</p>
+                        <div class="rating">
+                            {{$rating := .Rating}}
+                            {{range $index, $value := .StarCount}}
+                                {{if ge (printf "%d" $index) (printf "%f" $rating)}}
+                                    <img src="/static/star.svg" class="star" />
+                                {{else}}
+                                    <img src="/static/starfill.svg" class="star" />
+                                {{end}}
+                            {{end}}
+                        </div>
                     </div>
+                    <p>{{.Comment}}</p>
                 </div>
-                <p>Lorem dolor sit amet, consectetur adipiscing elit. Morbi fermentum dignissim metus et congue. Aliquam pellentesque luctus consequat. </p>
-            </div>
+            {{else}}
+                <h1>Il y a pas d'avis</h1>
+            {{end}}
         </section>
     </div>
 {{end}}

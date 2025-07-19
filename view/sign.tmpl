@@ -8,19 +8,26 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                flex-direction: column;
                 width: 500px;
                 margin: 0 auto;
-                padding: 20px;
-                border-radius: 10px;
-                background-color: var(--card-color);
-                box-shadow: var(--card-shadow);
-                .sign{
-                    width: 100%;
-                    .sign_header{
+                .brand{
+                    .logo{
+                        width: 100px;
+                        aspect-ratio: 1/1;
+                    }
+                    .brand-name{
                         text-align: center;
                         font-size: 1.5rem;
                         margin-bottom: 1rem;
                     }
+                }
+                .sign{
+                    padding: 20px;
+                    border-radius: 10px;
+                    background-color: var(--card-color);
+                    box-shadow: var(--card-shadow);
+                    width: 100%;
                     .sign_field{
                         margin-bottom: 1rem;
                         .label{
@@ -100,8 +107,11 @@
 
 {{define "Body"}}
 <div class="container">
+    <div class="brand">
+        <img src="/static/logo150.png" class="logo" />
+        <h1 class="brand-name">Connexion</h1>
+    </div>
     <form class="sign" hx-post="/connexion" hx-swap="none" id="signin">
-        <h1 class="sign_header">Connexion</h1>
         <div class="sign_field">
             <b class="label">Email</b>
             <div class="input">
@@ -125,7 +135,6 @@
     </form>
 
     <form class="sign hidden" hx-put="/connexion" hx-ext="json-enc-custom" hx-swap="none" id="signup">
-        <h1 class="sign_header">Inscrivez-vous</h1>
         <div class="sign_field">
             <b class="label">Nom</b>
             <div class="input">
@@ -173,10 +182,16 @@
     <script>
         const signin = document.getElementById("signin")
         const signup = document.getElementById("signup")
+        const brandName = document.querySelector(".brand-name")
 
         const onSwitchScreen = ()=>{
             signin.classList.toggle("hidden")
             signup.classList.toggle("hidden")
+            if (brandName.innerHTML === "Connexion"){
+                brandName.innerHTML = "Inscrivez-vous"
+            }else{
+                brandName.innerHTML = "Connexion"
+            }
         }
 
     </script>

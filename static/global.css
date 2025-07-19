@@ -418,6 +418,21 @@ nav{
     }
 }
 
+footer{
+    background-color: var(--card-color);
+    padding-inline: 10px;
+    .footer-content{
+        margin-block: 1rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    .footer-bottom{
+        border-top: 1px solid var(--text-color);
+        padding-block: 1rem;
+    }
+}
+
 .btn-primary {
     background-color: var(--primary-color);
     color: white;

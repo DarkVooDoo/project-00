@@ -55,39 +55,28 @@ func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
             <div id="employe-sugg" class="hidden"></div>
         </form>
         {{if .}}
+			<div class="employee-list">
             {{range .EmployeeList}}
                 {{$from := .Schedule.From}}
                 {{$to := .Schedule.To}}
-                <div class="employe">
+                <div class="employee-card">
                     {{if .Picture}}
                         <img src="/static/clock.svg" class="picture" />
                     {{else}}
                         <div class="picture" style="border:1px solid var(--border-color);">{{.ShortName}}</div>
                     {{end}}
-                    <h1>{{.Name}}</h1>
-                    <div class="element">
-                        <button type="button" class="moreBtn">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <g clip-path="url(#clip0_609_281)">
-                                    <path d="M12 8C13.1 8 14 7.1 14 6C14 4.9 13.1 4 12 4C10.9 4 10 4.9 10 6C10 7.1 10.9 8 12 8ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10ZM12 16C10.9 16 10 16.9 10 18C10 19.1 10.9 20 12 20C13.1 20 14 19.1 14 18C14 16.9 13.1 16 12 16Z" fill="var(--text-color)"/>
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_609_281">
-                                        <rect width="24" height="24" fill="var(--text-color)"/>
-                                    </clipPath>
-                                </defs>
-                            </svg>
-                        </button>
-                        <div class="popover">
-                            <button type="button" class="contentBtn" popovertarget="popover{{.Id}}">Horaire</button>
-                            <button type="button" class="contentBtn" popovertarget="confirmation{{.Id}}">Supprimer</button>
-                            <div id="confirmation{{.Id}}" class="confirmation" popover>
-                                <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
-                                <div class="command">
-                                <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
-                                <button type="button" class="btn btn-primary"
-                                    hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
-                                </div>
+                    <h1 class="name">{{.Name}}</h1>
+					<h2 class="more">Barber</h2>
+					<span class="more">Ancienneté: {{.Joined}}</span>
+                    <div class="actions">
+                        <button type="button" class="actionBtn btn-outline" popovertarget="popover{{.Id}}">Horaire</button>
+                        <button type="button" class="actionBtn btn-danger" popovertarget="confirmation{{.Id}}">Supprimer</button>
+                        <div id="confirmation{{.Id}}" class="confirmation" popover>
+                            <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
+                            <div class="command">
+                            <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
+                            <button type="button" class="btn btn-primary"
+                                hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
                             </div>
                         </div>
                     </div>
@@ -109,6 +98,7 @@ func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
                     </form>
                 </div>
             {{end}}
+			</div>
         {{end}}
     `)
     if err != nil{
@@ -178,7 +168,7 @@ func (e EtablishmentEmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
 		log.Printf("error converting the id to integer: %s", err)
 		return
 	}
-    employee := model.Employe{UserId: id, EtablishmentId: user.Etablishment}
+    employee := model.Employe{UserId: int64(id), EtablishmentId: user.Etablishment}
 	if err := employee.New(); err != nil{
         DisplayNotification(Notitification{"Error", "Requete echoué", "error"}, w)
         return
@@ -189,22 +179,24 @@ func (e EtablishmentEmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
     } = struct{Employee model.Employe; Week []string}{employee, model.Week}
     temp, err := template.New("new-employe").Parse(`
         {{$week := .Week}}
-        <div class="employe">
-            <img src="/static/clock.svg" class="picture" />
-            <h1>{{.Employee.Name}}</h1>
-            <div class="element">
-                <button type="button" class="moreBtn"><img src="/static/ellipsie.svg" class="icon" /></button>
-                <div class="popover">
-                    <button type="button" class="contentBtn" popovertarget="popover{{.Employee.Id}}">Horaire</button>
-                    <button type="button" class="contentBtn" popovertarget="confirmation{{.Employee.Id}}">Supprimer</button>
-
-                    <div id="confirmation{{.Employee.Id}}" class="confirmation" popover>
-                        <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
-                        <div class="command">
-                        <button type="button" style="background-color: red;color: white;" class="btn" popovertarget="confirmation{{.Employee.Id}}" popovertargetaction="hide">Cancel</button>
-                        <button type="button" style="background-color: var(--primary-color);" class="btn" 
-                            hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Employee.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
-                        </div>
+        <div class="employee-card">
+            {{if .Picture}}
+                <img src="/static/clock.svg" class="picture" />
+            {{else}}
+                <div class="picture" style="border:1px solid var(--border-color);">{{.ShortName}}</div>
+            {{end}}
+            <h1 class="name">{{.Name}}</h1>
+			<h2 class="more">Barber</h2>
+			<span class="more">Ancienneté: 1 mois</span>
+            <div class="actions">
+                <button type="button" class="actionBtn btn-outline" popovertarget="popover{{.Id}}">Horaire</button>
+                <button type="button" class="actionBtn btn-danger" popovertarget="confirmation{{.Id}}">Supprimer</button>
+                <div id="confirmation{{.Id}}" class="confirmation" popover>
+                    <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
+                    <div class="command">
+                    <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
+                    <button type="button" class="btn btn-primary"
+                        hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
                     </div>
                 </div>
             </div>
@@ -243,7 +235,7 @@ func (e EtablishmentEmployeeRoute) Delete(w http.ResponseWriter, r *http.Request
     body, _ := io.ReadAll(r.Body)
     value := strings.Split(string(body), "=")
 	id, _ := strconv.Atoi(value[1])
-    employee := model.Employe{Id: id, EtablishmentId: user.Etablishment}
+    employee := model.Employe{Id: int64(id), EtablishmentId: user.Etablishment}
     if employee.Id == 0{
         DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w) 
         return
