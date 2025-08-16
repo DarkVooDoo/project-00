@@ -9,7 +9,7 @@ import (
 )
 
 type SearchPayload struct{
-	id string `json:"id"`
+	Id string `json:"id"`
 	Latitude float64 `json:"lat,string"`
 	Longitude float64 `json:"lon,string"`
 	Query string `json:"query"`
@@ -61,6 +61,7 @@ func (s Search) Get(w http.ResponseWriter, r *http.Request){
 	s.NavbarData.Query = query
 	s.NavbarData.Latitude = lat
 	s.NavbarData.Longitude = lon
+	s.NavbarData.Radius = radius
     s.Etablishment = model.SearchEtablishment(query, lat, lon, radius)
 
     CreatePage(s, w, "view/page.html", "view/search.tmpl", "view/component/EtablishmentCard.tmpl")

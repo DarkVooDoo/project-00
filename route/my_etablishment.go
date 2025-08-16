@@ -1,6 +1,7 @@
 package route
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"planify/model"
@@ -63,19 +64,47 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
 	employee := model.Employe{EtablishmentId: me.User.Etablishment}
     appointment := model.Appointment{UserId: me.User.Id, EtablishmentId: me.User.Etablishment}
     me.TodayAppointment = appointment.EtablishmentTodayAppointments(conn)
-	me.TopEmployee = employee.TopEmployees(conn)
+	me.TopEmployee = employee.TopEmployees(conn, "Monthly")
     if err := CreatePage(me, w, "view/page.html", "view/my_etablishment.tmpl", "view/component/AppointmentCard.tmpl"); err != nil{
         return
     }
 }
 
 func (me MyEtablishmentRoute) Post(w http.ResponseWriter, r *http.Request){
-    //Fetch new Etablishment and put the id in cookie
     if err := VerifyToken(r, w, &me.User); err != nil{
         log.Printf("error reading the token")
         return
     }
-    //w.Header().Add("HX-Redirect", "/etablissement")
-    //w.WriteHeader(http.StatusTemporaryRedirect)
+	conn := model.GetDBPoolConn()
+	defer conn.Close()
+	filter := r.FormValue("employeeFilter")
+	employee := model.Employe{EtablishmentId: me.User.Etablishment}
+
+	employeeList := employee.TopEmployees(conn, filter)
+
+	temp, err := template.New("employee-perf").Parse(`
+	{{range .}}
+    	<div class="employee-perf">
+    	    {{with .Picture}}
+    	        <img src="{{.Picture}}" />
+    	    {{else}}
+    	        <div class="preview">{{.ShortName}}</div>
+    	    {{end}}
+    	    <div class="content">
+    	        <h3 class="name">{{.Name}}</h3>
+    	        <span class="title">Barber</span>
+    	    </div>
+    	    <div class="numbers">{{.TotalClient}} Clients</div>
+    	</div>
+	{{end}}
+	`)
+	if err != nil{
+		log.Printf("error parsing the template: %s", err)
+		return
+	}
+	if err := temp.Execute(w, employeeList); err != nil{
+		log.Printf("error executing the template: %s", err)
+		return
+	}
 }
 

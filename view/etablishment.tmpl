@@ -56,20 +56,18 @@
                 <p class="title-helper">Information sur les horaires de ouvertures</p>
             </div>
             <div class="shifts">
-                {{range $i, $v := .Week}}
+                {{range .Etablishment.Schedule}}
                 <div class="schedule-card">
                     <div class="label">
-                        <b class="dayName">{{.}}</b>
-                        <b data-label="is its open currently"></b>
+                        <b class="dayName">{{.DayName}}</b>
+                        <b data-label="is its open currently">{{.IsClose}}</b>
                     </div>
-                    <div class="shifts">
-                    {{range $index, $value := $schedule}}
-                        {{if eq $i $value.Day}}
+                    <div class="hours">
+                        {{if eq .CloseTime ""}}
+                            <b class="text">Fermé</b>
+                        {{else}}
                             <b class="text">{{.OpenTime}} - <b class="status">{{.CloseTime}}</b></b>
                         {{end}}
-                    {{else}}
-                        <h2>L'établissement n'a pas encore publier ses horaires</h2>
-                    {{end}}
                     </div>
                 </div>
                 {{end}}
@@ -80,7 +78,10 @@
             <div class="list">
                 {{range .Etablishment.Service}}
                     <div class="card">
-                        <h1 class="name">{{.Name}}</h1>
+                        <div class="header">
+                            <h1 class="name">{{.Name}}</h1>
+                            {{if ne .Discount 0}}<b class="discount-tag">-{{.Discount}}%</b>{{end}}
+                        </div>
                         <p class="description">{{.Description}}</p>
                         <div class="footer">
                             <div class="footer-time">
@@ -110,7 +111,10 @@
                                 </svg>
                                 <p>{{.Duration}} Mins</p>
                             </div>
-                            <b>{{.Price}}</b>
+                            <div>
+                                <b style="{{if ne .Price .DiscountPrice}}text-decoration:line-through;color:var(--text-color-helper);{{end}}">{{.Price}}</b>
+                                {{if ne .Price .DiscountPrice}}<b>{{.DiscountPrice}}</b>{{end}}
+                            </div>
                         </div>
                     </div>
                 {{else}}
@@ -126,6 +130,9 @@
         </section>
         <h1 class="section_name">Photos</h1>
         <div class="galery">
+            <button type="button" class="btn"><img src="/static/star.svg" class="photo" /></button>
+            <button type="button" class="btn"><img src="/static/star.svg" class="photo" /></button>
+            <button type="button" class="btn"><img src="/static/star.svg" class="photo" /></button>
             <button type="button" class="btn"><img src="/static/star.svg" class="photo" /></button>
         </div>
         <h1 class="section_name">Avis</h1>

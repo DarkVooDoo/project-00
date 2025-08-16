@@ -14,7 +14,7 @@
         </div>
         <div class="navigation">
             <a href="/etablissement" class="nav-btn selected">Tableau de bord</a>
-            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)">Rendez-vous</button>
+            <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/{{.User.Etablishment}}/rendez-vous" hx-target="#content">Rendez-vous</button>
             <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/service" hx-target="#content">Services</button>
             <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/schedule" hx-target="#content">Horaire</button>
             <button type="button" class="nav-btn" onclick="onChangeNavigation(this)" hx-get="/etablissement/employee" hx-target="#content">Employées</button>
@@ -69,11 +69,30 @@
                 <div class="dashboard-card-header">
                   <h2 class="header-title">Performance</h2>
                   <div class="header-action">
-                    <button type="button" class="header-btn">Week</button>
-                    <button type="button" class="header-btn">Mois</button>
-                    <button type="button" class="header-btn selected">Year</button>
+                    <button type="button" class="header-btn" hx-post="/etablissement" hx-vals='{"employeeFilter": "Weekly"}' hx-target="#perf-container"
+                    hx-on::after-request="if(event.detail.successful){
+                        for(const btn of document.getElementsByClassName('header-btn')){
+                            btn.classList.remove('selected')
+                        }
+                        this.classList.add('selected')
+                    }">Week</button>
+                    <button type="button" class="header-btn selected" hx-post="/etablissement" hx-vals='{"employeeFilter": "Monthly"}' hx-target="#perf-container"
+                    hx-on::after-request="if(event.detail.successful){
+                        for(const btn of document.getElementsByClassName('header-btn')){
+                            btn.classList.remove('selected')
+                        }
+                        this.classList.add('selected')
+                    }">Mois</button>
+                    <button type="button" class="header-btn" hx-post="/etablissement" hx-vals='{"employeeFilter": "Yearly"}' hx-target="#perf-container"
+                    hx-on::after-request="if(event.detail.successful){
+                        for(const btn of document.getElementsByClassName('header-btn')){
+                            btn.classList.remove('selected')
+                        }
+                        this.classList.add('selected')
+                    }">Year</button>
                   </div>
                 </div>
+                <div id="perf-container">
                 {{range .TopEmployee}}
                     <div class="employee-perf">
                         {{with .Picture}}
@@ -88,13 +107,11 @@
                         <div class="numbers">{{.TotalClient}} Clients</div>
                     </div>
                 {{end}}
+                </div>
               </section>
               <section class="dashboard-card">
                 <div class="dashboard-card-header">
                   <h2 class="header-title">Rendez-vous d'aujourd'hui</h2>
-                  <div>
-                    <a href="#">Tout</a>
-                  </div>
                 </div>
 
                 {{range .TodayAppointment}}
@@ -131,16 +148,11 @@
 
         let fetchTimeout
         const navigation = document.querySelectorAll(".navigation .nav-btn")
-        const newEtablishment = document.getElementById("new-etablishment")
         const appointment_tabs = document.querySelectorAll(".appointmentBtn")
         const locationSuggest = document.getElementById("location-suggest")
         const etablishmentAdresse = document.getElementById("adr")
         const inputPostal = document.getElementById("postal")
         
-        document.body.addEventListener("htmx:oobAfterSwap", ()=>{
-            newEtablishment.hidePopover()
-        })
-
         const onFetchLocation = (ele)=>{
             clearTimeout(fetchTimeout)
             fetchTimeout = setTimeout(async()=>{
@@ -231,9 +243,9 @@
         }
 
         const onTimeChange = (ele)=>{
-            const parentElement = ele.closest(".shift")
+            const parentElement = ele.closest(".day")
             const openTime = parentElement.dataset.open
-            const closeTime = parentElement.dataset.close
+            const closeTime = parentElement.dataset.close || ''
             
             const openTimeValue = parentElement.querySelector(".ot").value
             const closeTimeValue = parentElement.querySelector(".ct").value

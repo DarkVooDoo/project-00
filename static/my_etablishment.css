@@ -1,5 +1,6 @@
 @import "/static/appointment.css";
 @import "/static/parametre.css";
+@import "/static/my_etablishment_appointment.css";
 .my-etablishment{
     max-width: 1200px;
     margin: 1rem auto;
@@ -223,29 +224,13 @@
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: .3rem;
+                    line-height: 1.5rem;
                     .label{
                         font-size: 1.1rem;
                     }
                     .close{
                         padding: 0;
-                    }
-                    .newShiftBtn{
-                        height: 1.5rem;
-                        aspect-ratio: 1/1;
                         display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        &::after, &::before{
-                            content: "";
-                            position: absolute;
-                            height: 1.5rem;
-                            width: 2px;
-                            border-radius: 25px;
-                            background-color: var(--text-color);
-                        }
-                        &::before{
-                            transform: rotate(90deg);
-                        }
                     }
                 }
                 .shift{
@@ -266,7 +251,7 @@
                 }
             }
             .icon{
-                width: 1.5rem;
+                height: 1.5rem;
                 aspect-ratio: 1/1;
             }
         }
@@ -417,7 +402,7 @@
             .input{
                 width: 100%;
                 line-height: 2.5rem;
-                padding-inline: 10px;
+                padding-inline: 15px;
                 border-radius: 25px;
             }
             .input:focus ~ #employe-sugg{
@@ -495,18 +480,58 @@
                     }
                     .confirmation{
                         background-color: var(--card-color);
-                        padding: 10px;
-                        border-radius: 10px;
-                        width: 300px;
-                        .command{
+                        width: 370px;
+                        border-radius: 20px;
+                        .confirmation-header{
                             display: flex;
                             gap: 1rem;
-                            justify-content: space-between;
-                            .btn{
-                                padding-inline: 1rem;
-                                line-height: 2rem;
-                                border-radius: 5px;
+                            padding: 20px;
+                            align-items: center;
+                            border-bottom: 1px solid var(--border-color);
+                            .header-title{
+                                width: 100%;
+                                font-size: 1.3rem;
                             }
+                            .header-icon{
+                                height: 3rem;
+                                aspect-ratio: 1/1;
+                                position: relative;
+                                border-radius: 50%;
+                                background-color: rgb(254 226 226);
+                                padding: .5rem;
+                            }
+                            .closeBtn{
+                                background-color: transparent;
+                            }
+                        }
+                        .confirmation-body{
+                            padding: 20px;
+                            border-bottom: 1px solid var(--border-color);
+                            .confirmation-employee{
+                                display: flex;
+                                gap: 1rem;
+                                align-items: center;
+                                outline: 1px solid var(--border-color);
+                                padding: .8rem;
+                                border-radius: 10px;
+                                margin-top: .5rem;
+                                .shortname{
+                                    width: 2.5rem;
+                                    aspect-ratio: 1/1;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background-color: var(--primary-color);
+                                    font-weight: 500;
+                                    border-radius: 50%;
+                                }
+                            }
+                        }
+                        .confirmation-footer{
+                            padding: 20px;
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 1rem;
                         }
                     }
                 }
@@ -537,7 +562,7 @@
                         }
                     }
                     .btn{
-                        line-height: 2rem;
+                        line-height: 1.5rem;
                         background-color: var(--primary-color);
                         color: white;
                         font-weight: bold;

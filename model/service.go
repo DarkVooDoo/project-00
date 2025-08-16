@@ -12,6 +12,7 @@ type Service struct{
     Id int64 `json:"id,string"`
     Name string `json:"name"`
     Price string `json:"price"`
+	DiscountPrice string
     Duration int `json:"duration,string"`
     Description string `json:"description"`
 	Discount int `json:"discount,string"`
@@ -53,7 +54,8 @@ func (s *Service) Update()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    result, err := conn.ExecContext(context.Background(), `UPDATE service SET name=$1, price=$2 WHERE id=$3`, s.Name, strings.ReplaceAll(s.Price, ".", ","), s.Id)
+    result, err := conn.ExecContext(context.Background(), `UPDATE service SET name=$1, price=$2, discount=$3, duration=$4, description=$5 WHERE id=$6 AND etablishment_id=$7`, 
+	s.Name, strings.ReplaceAll(s.Price, ".", ","), s.Discount, s.Duration, s.Description, s.Id, s.EtablishmentId)
     if err != nil{
         log.Printf("error in the updating query service: %s", err)
         return errors.New("error in the query")

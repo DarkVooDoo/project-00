@@ -75,14 +75,14 @@ func (s *ServiceRoute) Post(w http.ResponseWriter, r *http.Request){
                 </svg>
                 </button>
                 <button type="submit" class="btn btn-primary">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
                     <path d="M21 3V8M21 8H16M21 8L18 5.29168C16.4077 3.86656 14.3051 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.2832 21 19.8675 18.008 20.777 14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 </button>
             </div>
 		  </div>
 		  <div class="body">
-		    <div class="form-group">
+			<div class="form-group">
 		      <div class="field">
 		        <label for="name" class="form-label">Nom</label>
 		        <input type="text" class="form-input" id="name" value="{{.Name}}" autocomplete="off" />
@@ -98,7 +98,7 @@ func (s *ServiceRoute) Post(w http.ResponseWriter, r *http.Request){
 		        </div>
 		        <div class="field">
 		          <label for="solde" class="form-label">Solde (%)</label>
-		          <input type="number" class="form-input" id="solde" max="100" value="{{.Discount}}" />
+		          <input type="number" class="form-input" id="solde" min="O" max="100" value="{{.Discount}}" />
 		        </div>
 		      </div>
 		    </div>
@@ -118,7 +118,14 @@ func (s *ServiceRoute) Post(w http.ResponseWriter, r *http.Request){
 
 func (s *ServiceRoute) Put(w http.ResponseWriter, r *http.Request){
 
-    service := model.Service{}
+	var user model.UserClaim
+	if err := VerifyToken(r, w, &user); err != nil{
+		log.Printf("error user unauthorized: %s", err)
+		DisplayNotification(Notitification{"Echoué", "Vous n'etes pas connecté", "error"}, w)
+		return
+	}
+
+    service := model.Service{EtablishmentId: user.Etablishment}
     if err := ReadJsonBody(r.Body, &service); err != nil{
         log.Println("error reading the payload")
         DisplayNotification(Notitification{"Error", "Mise a jour echouée", "error"}, w)

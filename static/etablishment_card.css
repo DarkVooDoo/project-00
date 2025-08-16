@@ -1,5 +1,5 @@
 .etab_card{
-    border-radius: calc(10px + .6rem);
+    border-radius: 20px;
     outline: 1px solid var(--border-color);
     background-color: var(--card-color);
     box-shadow: 0 1px 3px 0 rgba(85, 85, 85, 0.6), 0 1px 2px 0 rgba(85, 85, 85, 0.9);
@@ -7,13 +7,13 @@
         margin: .8rem .8rem .4rem .8rem;
         width: calc(100% - 1.6rem);
         aspect-ratio: 1 / .7;
-        border-radius: 10px;
+        border-radius: calc(20px - .8rem);
     }
     .content{
         width: 100%;
         .detail{
             padding: 0 .8rem .8rem .8rem; 
-            height: 7rem;
+            height: 8rem;
             display: block;
             .title{
                 font-size: 1.2rem;

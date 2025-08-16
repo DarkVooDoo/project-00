@@ -16,6 +16,7 @@ type Landpage struct{
     Etablishments []model.Etablishment
     NextAppointment model.Appointment
 	Navbar model.CacheNavbar
+	Review model.Review
 }
 
 type Notitification struct{
@@ -45,11 +46,16 @@ func (l Landpage) Get(w http.ResponseWriter, r *http.Request){
     l.Etablishments = e.Latest(conn)
     if err == nil{
         var appointment model.Appointment = model.Appointment{UserId: l.User.Id}
+		review := model.Review{UserId: l.User.Id}
+		if err := review.Get(conn); err != nil{
+			log.Printf("error getting the review: %s", err)
+		}
+		l.Review = review
         appointment.UserNextAppointment(conn)
         l.NextAppointment = appointment
 		l.Navbar = model.GetNavbarFromCache(conn, l.User)
     }
-    CreatePage(l, w, "view/page.html", "view/landpage.tmpl", "view/component/AppointmentCard.tmpl", "view/component/EtablishmentCard.tmpl")
+    CreatePage(l, w, "view/page.html", "view/landpage.tmpl", "view/component/AppointmentCard.tmpl", "view/component/EtablishmentCard.tmpl", "view/component/review_modal.tmpl")
 }
 
 func CreatePage(data any, w http.ResponseWriter, pattern ...string)error{

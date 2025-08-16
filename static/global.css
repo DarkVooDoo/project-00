@@ -4,8 +4,10 @@
     --card-shadow: 0px 3px 5px 2px rgba(140,140,140,0.4);
     --bg-color: #f1f1f1;
     --card-color: white;
+    --planning-card-confirmed: #f0fdf4;
+    --planning-card-completed: #eff6ff;
     --text-color: black;
-    --text-color-helper: #6f7685;
+    --text-color-helper: #4a505d;
     --primary-color: #2624f3;
     --primary-color-hover: #0c0ac9;
     --border-color: #C9C9C9;
@@ -21,6 +23,7 @@
 
     --success-color: #35b14a;
 
+    --icon-color: 0;
     --success-bg: #6fff83;
     --success-fg: #076d01;
     --warning-bg: oklch(0.94 0.05 53.1);
@@ -36,7 +39,11 @@
         --card-color: #181818;
         --border-color: #2b2b2b;
         --hover-color: #2b2929;
-        --button-bg-disabled: #2d2d2d
+        --button-bg-disabled: #2d2d2d;
+        --text-color-helper: #a5acb9;
+        --icon-color: 1;
+        --planning-card-completed: #1b242f;
+        --planning-card-confirmed: #152319;
     }
     input, textarea, select {
         color-scheme: dark;
@@ -109,7 +116,7 @@ nav{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-inline: 10px;
+    padding-inline: 1rem;
     background: var(--card-color);
     .logo{
         height: 2rem;
@@ -348,43 +355,64 @@ nav{
         border-bottom: none;
     }
     #search{
-        position: absolute;
-        top: 50px;
+        position: fixed;
+        top: 50%;
         left: 0;
-        width: 100%;
-        margin: 0;
-        padding-bottom: .5rem;
-        opacity: 0;
-        border-bottom: 2px solid var(--border-color);
+        width: 400px;
+        margin: 0 auto;
+        padding: .8rem;
         background-color: var(--card-color);
+        border-radius: calc(.8rem + 10px);
         transition: all .3s linear;
-        &:popover-open{
-            opacity: 1;
-            @starting-style{
-                opacity: 0;
+        transform: translateY(-50%);
+        &::backdrop{
+            background-color: rgba(0,0,0,.6);
+            backdrop-filter: blur(5px);
+        }
+        .search-header{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: .5rem;
+            .header-title{
+                font-size: 1.3rem;
+            }
+            #closeSearchModalBtn{
+                height: 2rem;
+                aspect-ratio: 1/1;
+                border-radius: 2rem;
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                &:hover{
+                    background-color: var(--border-color);
+                }
+                .icon{
+                    width: 1rem;
+                    height: 1rem;
+                }
             }
         }
-        &::backdrop{
-            background-color: transparent;
-            backdrop-filter: blur(0px);
-        }
         .field{
-            display: grid;
-            grid-template-columns: 1fr .7fr;
-            gap: .5rem;
-            padding: 5px 10px;
             .input{
                 width: 100%;
                 height: 2.5rem;
-                border-radius: 25px;
-                padding-left: 10px;
-                padding-right: 36px;
+                border-radius: 10px;
+                padding-inline: 10px;
                 background-color: var(--input-color);
                 background-color: var(--bg-color);
+                &:first-child{
+                    margin-bottom: .5rem;
+                }
+            }
+            #s-location{
+                margin-bottom: 0;
+                padding-right: 36px;
             }
             .my-position{
                 position: absolute;
                 right: 10px;
+                top: calc((-24px) + (2.5rem / 2) + 12px);
                 padding: 0;
                 display: flex;
                 .icon{
@@ -403,6 +431,9 @@ nav{
                 padding-inline: 10px;
                 cursor: pointer;
                 transition: background-color 200ms linear;
+                &:first-child{
+                    margin-top: .5rem;
+                }
                 &:hover{
                     background-color: var(--hover-color);
                 }
@@ -502,6 +533,10 @@ input, textarea{
 
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+   filter: invert(var(--icon-color));
 }
 
 input:focus, textarea:focus, select:focus{

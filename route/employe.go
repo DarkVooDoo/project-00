@@ -47,15 +47,14 @@ func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
     e.EmployeeList = employe.GetEtablishmentEmployees(conn)
     temp, err := template.New("employe").Parse(`
         {{$week := .Week}}
-        <form id="new-employe" hx-post="/etablissement/employee" hx-swap="afterend" hx-trigger="keyup[keyCode==13] throttle:5000ms" 
+        <form id="new-employe" hx-target=".employee-list" hx-post="/etablissement/employee" hx-swap="beforeend" hx-trigger="keyup[keyCode==13] throttle:5000ms" 
         hx-on::after-request="if(event.detail.successful && event.detail.elt.id != 'email')this.reset()"  >
             <input type="email" class="input" id="email" name="email" autocomplete="off" placeholder="Email" hx-put="/etablissement/employee" hx-trigger="keyup changed delay:1000ms" 
             hx-target="#employe-sugg" hx-swap="outerHTML" />
             <input type="text" id="id" name="id" class="hidden" />
             <div id="employe-sugg" class="hidden"></div>
         </form>
-        {{if .}}
-			<div class="employee-list">
+		<div class="employee-list">
             {{range .EmployeeList}}
                 {{$from := .Schedule.From}}
                 {{$to := .Schedule.To}}
@@ -71,16 +70,38 @@ func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
                     <div class="actions">
                         <button type="button" class="actionBtn btn-outline" popovertarget="popover{{.Id}}">Horaire</button>
                         <button type="button" class="actionBtn btn-danger" popovertarget="confirmation{{.Id}}">Supprimer</button>
-                        <div id="confirmation{{.Id}}" class="confirmation" popover>
-                            <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
-                            <div class="command">
-                            <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
-                            <button type="button" class="btn btn-primary"
-                                hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
-                            </div>
-                        </div>
+						<div id="confirmation{{.Id}}" class="confirmation" popover>
+						    <div class="confirmation-header">
+						        <div class="header-icon">
+						            <svg viewBox="0 0 24 24" fill="none" class="icon">
+						                <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 15H12.01M12 12V9M4.98207 19H19.0179C20.5615 19 21.5233 17.3256 20.7455 15.9923L13.7276 3.96153C12.9558 2.63852 11.0442 2.63852 10.2724 3.96153L3.25452 15.9923C2.47675 17.3256 3.43849 19 4.98207 19Z" stroke="rgb(220 38 38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
+						            </svg>
+						        </div>
+						        <h3 class="header-title">Confirmation de suppression</h3>
+						        <button type="button" class="header-icon closeBtn btn-outline" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">
+						            <svg viewBox="0 0 24 24" fill="none" class="icon"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Menu / Close_SM"> <path id="Vector" d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
+						
+						        </button>
+						    </div>
+						    <div class="confirmation-body">
+						        <p>Vous êtes sur le point de supprimer définitivement l'employé suivant :</p>
+						        <div class="confirmation-employee">
+						            <div class="shortname">{{.ShortName}}</div>
+						            <div class="employee-data">
+						                <h4>{{.Name}}</h4>
+						                <p>Barber</p>
+						                <p>Ancienneté: {{.Joined}}</p>
+						            </div>
+						        </div>
+						    </div>
+						    <div class="confirmation-footer">
+						        <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
+						        <button type="button" class="btn btn-primary" hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" 
+								hx-target="closest .employee-card">Confirmer</button>
+						    </div>
+						</div>
                     </div>
-                    <form class="employee-schedule" id="popover{{.Id}}" hx-patch="/etablissement/employee" hx-swap="none" hx-ext="json-enc-custom" hx-vals='{"id": "{{.Id}}"}'  popover>
+                    <form class="employee-schedule" id="popover{{.Id}}" hx-patch="/etablissement/employee" hx-swap="none" hx-ext="json-enc-custom" hx-vals='{"id": "{{.Id}}"}' popover>
                         {{range $index, $element := $week}}
                             <div class="day">
                                 <h1 class="label">{{$element}}</h1>
@@ -98,8 +119,7 @@ func (e EtablishmentEmployeeRoute) Get(w http.ResponseWriter, r *http.Request){
                     </form>
                 </div>
             {{end}}
-			</div>
-        {{end}}
+		</div>
     `)
     if err != nil{
         log.Printf("error creating the template:  %s", err)
@@ -180,25 +200,46 @@ func (e EtablishmentEmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
     temp, err := template.New("new-employe").Parse(`
         {{$week := .Week}}
         <div class="employee-card">
-            {{if .Picture}}
+            {{if .Employee.Picture}}
                 <img src="/static/clock.svg" class="picture" />
             {{else}}
-                <div class="picture" style="border:1px solid var(--border-color);">{{.ShortName}}</div>
+                <div class="picture" style="border:1px solid var(--border-color);">{{.Employee.ShortName}}</div>
             {{end}}
-            <h1 class="name">{{.Name}}</h1>
+            <h1 class="name">{{.Employee.Name}}</h1>
 			<h2 class="more">Barber</h2>
-			<span class="more">Ancienneté: 1 mois</span>
+			<span class="more">Ancienneté: {{.Employee.Joined}}</span>
             <div class="actions">
-                <button type="button" class="actionBtn btn-outline" popovertarget="popover{{.Id}}">Horaire</button>
-                <button type="button" class="actionBtn btn-danger" popovertarget="confirmation{{.Id}}">Supprimer</button>
-                <div id="confirmation{{.Id}}" class="confirmation" popover>
-                    <h1 style="margin-bottom: 1rem;line-height:1rem;text-align:center">Voulez-vouz supprimer l'employee?</h1>
-                    <div class="command">
-                    <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Id}}" popovertargetaction="hide">Cancel</button>
-                    <button type="button" class="btn btn-primary"
-                        hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Id}}"}' hx-swap="delete" hx-target="closest .employe">Confirmer</button>
-                    </div>
-                </div>
+                <button type="button" class="actionBtn btn-outline" popovertarget="popover{{.Employee.Id}}">Horaire</button>
+                <button type="button" class="actionBtn btn-danger" popovertarget="confirmation{{.Employee.Id}}">Supprimer</button>
+                <div id="confirmation{{.Employee.Id}}" class="confirmation" popover>
+				    <div class="confirmation-header">
+				        <div class="header-icon">
+				            <svg viewBox="0 0 24 24" fill="none" class="icon">
+				                <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 15H12.01M12 12V9M4.98207 19H19.0179C20.5615 19 21.5233 17.3256 20.7455 15.9923L13.7276 3.96153C12.9558 2.63852 11.0442 2.63852 10.2724 3.96153L3.25452 15.9923C2.47675 17.3256 3.43849 19 4.98207 19Z" stroke="rgb(220 38 38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
+				            </svg>
+				        </div>
+				        <h3 class="header-title">Confirmation de suppression</h3>
+				        <button type="button" class="header-icon closeBtn btn-outline" popovertarget="confirmation{{.Employee.Id}}"  popovertargetaction="hide">
+				            <svg viewBox="0 0 24 24" fill="none" class="icon"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Menu / Close_SM"> <path id="Vector" d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
+				        </button>
+				    </div>
+				    <div class="confirmation-body">
+				        <p>Vous êtes sur le point de supprimer définitivement l'employé suivant :</p>
+				        <div class="confirmation-employee">
+				            <div class="shortname">{{.Employee.ShortName}}</div>
+				            <div class="employee-data">
+				                <h4>{{.Employee.Name}}</h4>
+				                <p>Barber</p>
+				                <p>Ancienneté: {{.Employee.Joined}}</p>
+				            </div>
+				        </div>
+				    </div>
+				    <div class="confirmation-footer">
+				        <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Employee.Id}}" popovertargetaction="hide">Cancel</button>
+				        <button type="button" class="btn btn-primary" hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Employee.Id}}"}' hx-swap="delete" 
+						hx-target="closest .employee-card">Confirmer</button>
+				    </div>
+				</div>
             </div>
             <form class="employee-schedule" id="popover{{.Employee.Id}}" hx-patch="/etablissement/employee" hx-swap="none" hx-ext="json-enc-custom" hx-vals='{"id": "{{.Employee.Id}}"}' popover>
                 {{range $index, $element := $week}}

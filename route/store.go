@@ -10,7 +10,6 @@ type Store struct{
     User model.UserClaim
 	Navbar model.CacheNavbar
     Etablishment model.Etablishment
-    Week []string
 }
 
 var StoreHandler http.Handler = &Store{}
@@ -39,7 +38,6 @@ func (s Store) Get(w http.ResponseWriter, r *http.Request){
         w.WriteHeader(http.StatusTemporaryRedirect)
         return
     }
-    s.Week = model.Week
-	CreatePage(s, w, "view/page.html", "view/etablissement.tmpl")
+	CreatePage(s, w, "view/page.html", "view/etablishment.tmpl")
 }
 

@@ -51,12 +51,35 @@ func (e *Etablishment) Create()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    etablishmentRow:= conn.QueryRowContext(context.Background(), `INSERT INTO etablishment(name, adresse, postal, geolocation, phone, payment, category_id, user_id) 
+	tx, err := conn.BeginTx(context.Background(), &sql.TxOptions{})
+	if err != nil{
+		log.Printf("error creating the transtation: %s", err)
+		return errors.New("error happend")
+	}
+    etablishmentRow:= tx.QueryRow(`INSERT INTO etablishment(name, adresse, postal, geolocation, phone, payment, category_id, user_id) 
 	VALUES($1,$2,$3,POINT($4, $5),$6,$7,$8,$9) RETURNING id`, e.Name, e.Adresse, e.Postal, e.Lat, e.Lon, e.Phone, pq.Array(e.Payment), e.Category, e.UserId)
     if err := etablishmentRow.Scan(&e.Id); err != nil{
         log.Printf("error scanning the query: %s", err)
+		tx.Rollback()
         return errors.New("error nothing happend")
     }
+	result, err := tx.Exec(`INSERT INTO schedule (day, open_time, etablishment_id) VALUES(0, '06:00:00', $1), (1, '06:00:00', $1), (2, '06:00:00', $1), (3, '06:00:00', $1), (4, '06:00:00', $1), 
+	(5, '06:00:00', $1), (6, '06:00:00', $1)`, e.Id)
+	if err != nil{
+		log.Printf("error inserting the initial schedule: %s", err)
+		tx.Rollback()
+		return errors.New("error in the schedule initial creating")
+	}
+	aff, err := result.RowsAffected();
+	if aff < 1 || err != nil{
+		log.Printf("error zero row affected: %s", err)
+		tx.Rollback()
+		return errors.New("error nothing happend")
+	}
+	if err = tx.Commit(); err != nil{
+		log.Printf("error commiting the transctation: %s", err)
+		return errors.New("error in the transctation")
+	}
     return nil
 }
 
@@ -192,15 +215,15 @@ func (e *Etablishment) Public(conn *sql.Conn)(int, error){
 	schedule := DaySchedule{EtablishmentId: e.Id}
     var weekDay int
 	//(SELECT AVG(rating) FROM review WHERE etablishment_id=$1)
-    etablishmentRow, err := conn.QueryContext(context.Background(), `SELECT e.name, e.payment, COALESCE(e.phone, ''), e.adresse, e.postal, s.name, s.price, s.description, s.duration, 
-    c.name, EXTRACT(ISODOW FROM NOW()) - 1 
-    FROM etablishment AS e LEFT JOIN service AS s ON s.etablishment_id=e.id LEFT JOIN category AS c ON c.id=e.category_id WHERE e.id=$1`, e.Id)
+    etablishmentRow, err := conn.QueryContext(context.Background(), `SELECT e.name, e.payment, COALESCE(e.phone, ''), e.adresse, e.postal, s.name, s.price, 
+	s.price * (100 - s.discount) / 100, s.discount, s.description, s.duration, c.name, EXTRACT(ISODOW FROM NOW()) - 1 FROM etablishment AS e LEFT JOIN service AS s ON s.etablishment_id=e.id 
+	LEFT JOIN category AS c ON c.id=e.category_id WHERE e.id=$1`, e.Id)
     if err != nil{
         log.Printf("error in the query: %s", err)
         return weekDay, errors.New("error in the query")
     }
     for etablishmentRow.Next(){
-        if err := etablishmentRow.Scan(&e.Name, pq.Array(&e.Payment), &e.Phone, &e.Adresse, &e.Postal, &service.Name, &service.Price, &service.Description, 
+        if err := etablishmentRow.Scan(&e.Name, pq.Array(&e.Payment), &e.Phone, &e.Adresse, &e.Postal, &service.Name, &service.Price, &service.DiscountPrice, &service.Discount, &service.Description, 
         &service.Duration,  &e.Category, &weekDay); err != nil{
             log.Printf("error scanning the schedule: %s", err)
             continue

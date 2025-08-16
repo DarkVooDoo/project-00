@@ -77,7 +77,7 @@ func (a ViewAppointmentRoute) Delete(w http.ResponseWriter, r *http.Request){
         log.Printf("error noauthorized")
         return
     }
-    appointment := model.Appointment{UserId: user.Id, EmployeeId: user.Employee, Id: r.PathValue("id")}
+    appointment := model.Appointment{UserId: user.Id, EmployeeId: user.Employee, Id: r.PathValue("id"), EtablishmentId: user.Etablishment}
     if err := appointment.Delete(); err != nil{
 		DisplayNotification(Notitification{"Echoué", "Suppresion impossible", "error"}, w)
         return

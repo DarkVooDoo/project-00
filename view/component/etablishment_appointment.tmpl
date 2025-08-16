@@ -1,0 +1,122 @@
+{{define "Appointment"}}
+    <div id="appointment">
+        <div class="stats-section">
+          <div class="stat-card">
+            <div class="stat-value">{{.AppointmentNumbers.Total}}</div>
+            <div class="stat-label">Total rendez-vous</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{.AppointmentNumbers.Accepted}}</div>
+            <div class="stat-label">Confirmés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{.AppointmentNumbers.Finish}}</div>
+            <div class="stat-label">Terminés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{.AppointmentNumbers.Cancelled}}</div>
+            <div class="stat-label">Annulés</div>
+          </div>
+        </div>
+        
+        {{range .List}}
+        <details class="employee-appointment">
+          <summary class="employee-header">
+            <div class="employee-info">
+              <div class="employee-avatar">{{.Employee.ShortName}}</div>
+              <div class="employee-details">
+                <h3>{{.Employee.Name}}</h3>
+                <div class="employee-role">Coiffeuse senior</div>
+              </div>
+            </div>
+ 
+            <div class="employee-stats">
+              <div>
+                <div class="employee-stat-value">{{.Employee.TotalClient}}</div>
+                <div class="employee-stat-label">Rendez-vous</div>
+              </div>
+              <div>
+                <div class="employee-stat-value">{{.Employee.TotalMoney}}</div>
+                <div class="employee-stat-label">Chiffre d'affaires</div>
+              </div>
+            </div>
+
+            <span class="toggle-employee">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="arrow" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </summary>
+          
+          <div class="appointments-grid">
+        {{range .Appointment}}
+            <div class="appointment-card">
+              <div id="status-badge" class='appointment-status {{if eq .Status "Terminé"}}completed{{else if eq .Status "Confirmé"}}confirmed{{else}}cancelled{{end}}'>{{.Status}}</div>
+              <div class="appointment-time">
+                <svg class="time-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                {{.Date}}
+              </div>
+              
+              <div class="appointment-client">
+                <svg class="client-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                {{.CustomerName}}
+              </div>
+              
+              <div class="appointment-services">
+                <div class="services-title">Services
+                  <span class="moreIcon">
+                    ?
+                    <div class="moreInfo">
+                        {{range .ServiceList}}
+                            <p class="moreInfo-text">{{.}}</p>
+                        {{end}}
+                     
+                    </div>
+                  </span>    
+                </div>
+              </div>
+              
+              <div class="appointment-total">
+                <span class="total-label">Total:</span>
+                <span class="total-amount">{{.Price}}</span>
+              </div>
+              
+              <div class="appointment-actions">
+                <a class="btn btn-primary" href="/rendez-vous/{{.Id}}">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Voir
+                </a>
+                {{if eq .Status "Confirmé"}}
+                    <button class="btn btn-danger" hx-delete="/rendez-vous/{{.Id}}" hx-swap="delete">
+                      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      Annuler
+                    </button>
+                {{end}}
+              </div>
+            </div>
+        {{else}}
+            <svg class="page-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <h3>Aucun rendez-vous prévu pour cette employée aujourd'hui</h3>
+        {{end}}
+          </div>
+        </details>
+        {{end}}
+    </div>
+{{end}} 
