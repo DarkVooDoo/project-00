@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"planify/model"
@@ -32,12 +33,17 @@ func main(){
     mux.HandleFunc("/planning", route.PlanningHandler.ServeHTTP)
     mux.HandleFunc("/schedule", route.ScheduleHandler.ServeHTTP)
     mux.HandleFunc("/review/{id}", route.ReviewHandler.ServeHTTP)
-    mux.HandleFunc("/notification", route.ViewNotificationHandler.ServeHTTP)
     mux.HandleFunc("/etablissement", route.MyEtablishmentHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/parametre", route.ParametreHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/service", route.ServiceHandler.ServeHTTP)
     mux.HandleFunc("/etablissement/employee", route.EtablishmentEmployeHandler.ServeHTTP)
-    mux.HandleFunc("/employee/{id}", route.EmployeHandler.ServeHTTP)
+    //mux.HandleFunc("/employee/{id}", route.EmployeHandler.ServeHTTP)
+	mux.HandleFunc("GET /politique-confidentialite", func(w http.ResponseWriter, r *http.Request) {
+		var t route.Landpage
+		temp, _ := template.ParseFiles("view/page.html", "view/PC.tmpl")
+		route.VerifyToken(r, w, &t.User)
+		temp.Execute(w, t)
+	})
 
     server := http.Server{
         Addr: Addr,

@@ -1,24 +1,34 @@
 package model
 
 import (
-	"log"
-	"regexp"
+	"os"
 	"testing"
 )
 
-type Navigation struct{
-	Employee []string
-}
-
-func TestPath(t *testing.T){
-
-	referer := "http://localhost:8000/rendez-vous/45"
-	isOk, err := regexp.Match("/rendez-vous/[0-9]+$", []byte(referer))
-	if err != nil{
-		t.Fatalf("error in the regex: %s", err)
+func TestJson(t *testing.T){
+	//cmd := exec.Command("bash", "test.sh", "what")
+	//if err := cmd.Run(); err != nil{
+	//	log.Fatalf("error command: %s", err)
+	//}
+	//log.Println("success")
+	f, err := os.CreateTemp("Hello.go")
+	if err !=  nil{
+		t.Fatalf("error creating the file: %s", err)
 	}
-	if !isOk{
-		log.Printf("error no match")
-	}
+	defer f.Close()
+	
+	//myFile, err := os.Open("auth_test.go")
+	//if err != nil{
+	//	t.Fatalf("error opening the file auth_test: %s", err)
+	//}
+	//defer myFile.Close()
+	//_, err = io.Copy(f, myFile)
+	//if err != nil{
+	//	t.Fatalf("error copying the file: %s", err)
+	//}
+	//if err = f.Close(); err != nil{
+	//	t.Fatalf("error closing the file: %s", err)
+	//}
+	//log.Println("Success")
 }
 

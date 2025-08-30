@@ -50,7 +50,7 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
     }
     conn := GetDBPoolConn()
     defer conn.Close()
-    result, err := conn.ExecContext(context.Background(), `UPDATE users SET picture=$1 WHERE id=$2`, fmt.Sprintf("%s/%s", "https://d1fzr3lngay3vb.cloudfront.net", u.Id), u.Id)
+    result, err := conn.ExecContext(context.Background(), `UPDATE users SET picture=$1 WHERE id=$2`, fmt.Sprintf("%s/%d", "https://d1fzr3lngay3vb.cloudfront.net", u.Id), u.Id)
     if err != nil{
         log.Printf("error in the query: %s", err)
         return errors.New("error database query")
@@ -60,7 +60,7 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
         log.Printf("error zero row affected")
         return errors.New("nothings happend")
     }
-    u.Picture = fmt.Sprintf("%s/%s", "https://d1fzr3lngay3vb.cloudfront.net", u.Id)
+    u.Picture = fmt.Sprintf("%s/%d", "https://d1fzr3lngay3vb.cloudfront.net", u.Id)
     return nil
 }
 
@@ -117,13 +117,13 @@ func (u *User) Sign(email string, password string)(error){
 }
 
 func verifyPassword(password string, salt int) string{
-    cypher := sha256.Sum256([]byte(fmt.Sprintf("%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY"))))
+    cypher := sha256.Sum256(fmt.Appendf([]byte(""), "%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY")))
     return fmt.Sprintf("%x", cypher)
 }
 
 func cryptPassword(password string)(cryptPassword string, salt int){
     salt = rand.Intn(9999-1000) + 1000
-    cypher := sha256.Sum256([]byte(fmt.Sprintf("%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY"))))
+    cypher := sha256.Sum256(fmt.Appendf([]byte(""), "%v%v%v", password,salt,os.Getenv("PASSWORD_SECRET_KEY")))
     cryptPassword = fmt.Sprintf("%x", cypher)
     return cryptPassword, salt
 }

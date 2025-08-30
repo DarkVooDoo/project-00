@@ -1,11 +1,15 @@
 package route
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"planify/model"
 	"slices"
 	"strings"
 	"unicode"
+
+	"google.golang.org/api/idtoken"
 )
 
 type Sign struct{
@@ -37,6 +41,16 @@ func (s Sign) Get(w http.ResponseWriter, r *http.Request){
 }
 
 func (s Sign) Post(w http.ResponseWriter, r *http.Request){
+	googleToken := r.FormValue("cred")
+	if googleToken != ""{
+		payload, err := idtoken.Validate(context.Background(), googleToken, "432757696898-pbn4r01ut5ejpnrs342foham08ger5rp.apps.googleusercontent.com")
+		if err != nil{
+			log.Printf("error validating the token: %s", err)
+		}
+		//TODO: Create a new JWT token with his google info cuz google token duration is 1H
+		log.Println(payload.Claims["email"])
+		return
+	}
     email := r.FormValue("email")
     password := r.FormValue("password")
     

@@ -236,7 +236,7 @@ func (e EtablishmentEmployeeRoute) Post(w http.ResponseWriter, r *http.Request){
 				    </div>
 				    <div class="confirmation-footer">
 				        <button type="button" class="btn btn-danger" popovertarget="confirmation{{.Employee.Id}}" popovertargetaction="hide">Cancel</button>
-				        <button type="button" class="btn btn-primary" hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Employee.Id}}"}' hx-swap="delete" 
+						<button type="button" class="btn btn-primary" hx-delete="/etablissement/employee" hx-vals='{"id": "{{.Employee.Id}}", "active": "false"}' hx-swap="delete" 
 						hx-target="closest .employee-card">Confirmer</button>
 				    </div>
 				</div>
@@ -273,10 +273,14 @@ func (e EtablishmentEmployeeRoute) Delete(w http.ResponseWriter, r *http.Request
 		log.Printf("error in the token")
 		return
 	}
+	valMap := make(map[string]string)
     body, _ := io.ReadAll(r.Body)
-    value := strings.Split(string(body), "=")
-	id, _ := strconv.Atoi(value[1])
-    employee := model.Employe{Id: int64(id), EtablishmentId: user.Etablishment}
+	for v := range strings.SplitSeq(string(body), "&"){
+		keyVal := strings.Split(v, "=")
+		valMap[keyVal[0]] = keyVal[1]
+	}
+	id, _ := strconv.Atoi(valMap["id"])
+    employee := model.Employe{Id: int64(id), EtablishmentId: user.Etablishment, UserId: user.Id, IsActive: valMap["active"]=="true"}
     if employee.Id == 0{
         DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w) 
         return
@@ -284,6 +288,6 @@ func (e EtablishmentEmployeeRoute) Delete(w http.ResponseWriter, r *http.Request
     if err := employee.Delete(); err != nil{
          DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w)
         return
-   }
-   DisplayNotification(Notitification{"Reussi", "employee supprimer", "success"}, w)
+	}
+	DisplayNotification(Notitification{"Reussi", "employee supprimer", "success"}, w)
 }

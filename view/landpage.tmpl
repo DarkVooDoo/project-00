@@ -7,6 +7,16 @@
 {{define "Body"}}
 <div class="container">
     {{if .User.Id}}
+        {{if gt (len .Recent) 0}}
+            <h1 class="header">Recent</h1>
+            <div class="recent-wrapper">
+                <div class="recent">
+                    {{range .Recent}}
+                        {{template "EtablishmentCard" .}}
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
         {{if .NextAppointment.Id}}
             <h1 class="header">Rendez-vous</h1>
             {{template "AppointmentCard" .NextAppointment}}

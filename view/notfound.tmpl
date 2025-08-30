@@ -1,0 +1,20 @@
+{{define "Head"}}
+    <title>404 Page Introuvable</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik+Distressed&display=swap');
+        .notfound-header{
+            font-family: "Rubik Distressed", system-ui;
+            font-weight: 400;
+            font-style: normal;
+            color: var(--primary-color);
+            font-size: 150px;
+        }
+    </style>
+{{end}}
+
+{{define "Body"}}
+    <div style="min-height:calc(100vh - 50px);display: flex;align-items:center;justify-content:center;flex-direction:column;">
+        <h1 class="notfound-header">404</h1>
+        <p style="font-size:clamp(150px, 14vw, 300px);">Page Introuvable</p>
+    </div>
+{{end}}

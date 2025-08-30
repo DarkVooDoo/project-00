@@ -28,6 +28,20 @@ BEGIN
 END;
 $$;
 
+CREATE FUNCTION service_exist_within_etablishment() RETURNS TRIGGER LANGUAGE PLPGSQL AS $$
+DECLARE
+    exist BOOL;
+    e_id BIGINT;
+BEGIN
+    SELECT etablishment_id FROM appointment AS a WHERE a.id=NEW.appointment_id INTO e_id;
+    SELECT EXISTS(SELECT 1 FROM service AS s WHERE s.id=NEW.service_id AND e_id=s.etablishment_id) INTO exist;
+    IF NOT exist THEN
+        RAISE 'Le service ne pas dans letablishment: %', NEW.service_id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
 CREATE FUNCTION GeolocationDistance (geolocation1 POINT, geolocation2 POINT) 
 RETURNS FLOAT language plpgsql AS $$
   DECLARE
@@ -146,7 +160,7 @@ CREATE TABLE employee (
     schedule JSONB,
     role employee_role,
     joined DATE DEFAULT NOW(),
-    is_active BOOL DEFAULT true,
+    is_active BOOL DEFAULT false,
     etablishment_id BIGINT REFERENCES etablishment(id),
     user_id BIGINT REFERENCES users(id),
     CONSTRAINT unique_etablishment_employee UNIQUE(etablishment_id, user_id)
@@ -157,7 +171,8 @@ CREATE TYPE appointment_status AS ENUM ('Attente', 'Confirmé', 'Terminé', 'Ann
 CREATE TABLE appointment (
     id BIGSERIAL PRIMARY KEY,
     "date" TSRANGE,
-    total MONEY,
+    name VARCHAR(70),
+    phone VARCHAR(10),
     status appointment_status,
     user_id BIGINT REFERENCES users(id),
     etablishment_id BIGINT REFERENCES etablishment(id),
@@ -173,6 +188,8 @@ CREATE TABLE appointment_service(
     PRIMARY KEY(appointment_id, service_id) 
 );
 
+CREATE TRIGGER service_exist_in_etablisment BEFORE INSERT ON appointment_service FOR EACH ROW EXECUTE FUNCTION service_exist_within_etablishment();
+
 CREATE TABLE review (
     id BIGSERIAL PRIMARY KEY NOT NULL,
     comment TEXT,
@@ -184,14 +201,6 @@ CREATE TABLE review (
     etablishment_id BIGINT REFERENCES etablishment(id),
     user_id BIGINT REFERENCES users(id),
     employee_id BIGINT REFERENCES employee(id)
-);
-
-CREATE TABLE notification (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    readed BOOL DEFAULT false,
-    create_at TIMESTAMP DEFAULT NOW(),
-    message VARCHAR(255) NOT NULL,
-    user_id BIGINT REFERENCES users(id)
 );
 
 /*CREATE TABLE message (

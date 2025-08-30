@@ -18,6 +18,7 @@
             <span class="label">Annulés</span>
         </div>
     </div>
+    {{if gt (len .Shift) 0}}
     <div class="planning-container">
         <div class="planning-grid">
             <div class="time-column">
@@ -31,8 +32,10 @@
                     <div class="hour-row"></div>
                 {{end}}
                 {{range .Schedule}}
-                    <div class='appointment-card status-{{if eq .Status "Confirmé"}}confirmed{{else if .Status "Terminé"}}completed{{else}}cancelled{{end}}'
-                        style="top:{{.Position.Position}}px;height:{{.Position.Height}}px">
+                    <div class='appointment-card status-{{if eq .Status "Confirmé"}}confirmed{{else if .Status "Terminé"}}completed{{else}}cancelled{{end}}'  
+                    style="top:{{.Position.Position}}px;height:{{.Position.Height}}px"
+                    hx-patch="/planning" hx-target="#appointmentModal" hx-trigger="click" hx-ext="json-enc-custom" hx-swap="outerHTML" hx-on:click='document.body.style.overflow="hidden"'
+                    hx-vals='{"id": "{{.Id}}","customerName": "{{.CustomerName}}", "contact": "{{.Contact}}", "timeframe": "{{.Timeframe}}", "status": "{{.Status}}", "serviceList": {{.ServiceTook}}, "price": "{{.Price}}"}' >
                         <div class="appointment-status"></div>
                         <div>
                             <div class="appointment-time">
@@ -50,10 +53,6 @@
                               {{.CustomerName}}
                             </div>
                         </div>
-						<a href="/rendez-vous/{{.Id}}" class="appointment-view">
-							<svg class="icon" viewBox="0 0 24 24" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
-							</svg>
-						</a>
                     </div>
                 {{end}}
             </div>
@@ -74,6 +73,14 @@
             </div>
         </div>
     </div>
+    {{else}}
+    <div class="close-card">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M10 13L14 17M14 13L10 17M3 9H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+        <h3 class="title"> Établissement fermé aujourd'hui</h3>
+        <p class="more">Votre agenda est libre pour la journée. Profitez de ce temps pour vous reposer ou planifier vos prochains rendez-vous.</p>
+    </div>
+    {{end}}
+
+    <div class="modal-overlay" id="appointmentModal"></div>
 </div>
-{{/*TODO: Modal to show complete appointment */}}
 {{end}}

@@ -4,7 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
 	"log"
+	"mime/multipart"
+	"os"
+	"os/exec"
 
 	"github.com/lib/pq"
 )
@@ -143,6 +150,67 @@ func(e *Etablishment) Latest(conn *sql.Conn)[]Etablishment{
     return list
 }
 
+func (e *Etablishment) Recent(conn *sql.Conn)[]Etablishment{
+	var list []Etablishment
+	recentEtablishmentRows, err := conn.QueryContext(context.Background(), `
+		WITH derniers_etabs AS (
+		    SELECT e.id, e.name, e.adresse, e.postal, e.phone, e.category_id FROM appointment AS a LEFT JOIN etablishment AS e ON e.id=a.etablishment_id WHERE a.status=$2 AND a.user_id=$1 
+		),
+		maintenant AS (
+		    SELECT EXTRACT(ISODOW FROM NOW()) - 1 AS jour_semaine, NOW()::time AS heure_actuelle
+		),
+		horaires AS (
+		    SELECT 
+		        e.id,
+		        e.name,
+		        e.adresse,
+				e.postal,
+				e.phone,
+				c.name AS category,
+		        oh.day,
+		        oh.open_time,
+		        oh.close_time,
+				-- détermine si l'établissement est ouvert maintenant
+		        CASE 
+		            WHEN oh.day = EXTRACT(ISODOW FROM NOW()) - 1
+		                 AND NOW()::time BETWEEN oh.open_time AND oh.close_time 
+		            THEN TRUE 
+		            ELSE FALSE 
+		        END AS est_ouvert,
+		        -- calcule le prochain horaire d'ouverture après maintenant
+		        ((oh.day - EXTRACT(DOW FROM NOW()) + 7) % 7) AS jours_d_attente
+		    FROM derniers_etabs e
+		    LEFT JOIN schedule oh ON e.id = oh.etablishment_id
+			LEFT JOIN category AS c ON c.id = e.category_id
+		),
+		prochains_horaires AS (
+		    SELECT *,
+		        CASE 
+					WHEN est_ouvert THEN CONCAT('Ferme à ', TO_CHAR(close_time, 'HH24:MI'))
+					WHEN open_time IS NULL THEN 'Fermé Termporairement'
+					ELSE CONCAT('Ouvre ', ('{Lun,Mar,Mer,Jeu,Ven,Sam,Dim}'::TEXT[])[day + 1], ' ' , TO_CHAR(open_time, 'HH24:MI'))
+				END AS prochain_horaire,
+		        ROW_NUMBER() OVER (PARTITION BY id ORDER BY jours_d_attente) AS rn
+		    FROM horaires
+		)
+		SELECT id, name, adresse, postal, COALESCE(phone, ''), category, CASE WHEN est_ouvert THEN 'Ouvert' ELSE 'Fermé' END, prochain_horaire FROM prochains_horaires
+		WHERE rn = 1
+		GROUP BY id, name, adresse, postal, phone, category, prochain_horaire, est_ouvert
+	`, e.UserId, "Terminé")
+	if err != nil{
+		log.Printf("error getting user recent etablishment: %s", err)
+		return list
+	}
+	for recentEtablishmentRows.Next(){
+        if err := recentEtablishmentRows.Scan(&e.Id, &e.Name, &e.Adresse, &e.Postal, &e.Phone, &e.Category, &e.IsOpen, &e.NextShift); err != nil{
+            log.Printf("error scanning rows: %s", err)
+        }
+        list = append(list, *e)
+
+	}
+	return list
+}
+
 func (e *Etablishment) Parametre(conn *sql.Conn)error{
     etablishmentRow := conn.QueryRowContext(context.Background(), `SELECT e.name, e.adresse, e.postal, COALESCE(e.phone, ''), c.id, e.payment, enum_range(NULL::payment_type) 
     FROM etablishment AS e LEFT JOIN category AS c ON c.id=e.category_id WHERE e.id=$1 AND e.user_id=$2`, e.Id, e.UserId)
@@ -181,14 +249,14 @@ func (e *Etablishment) GetEmployeeAndService(conn *sql.Conn){
     var service Service
     var name  sql.NullString
 	var id sql.NullInt64
-    employeeList, err := conn.QueryContext(context.Background(), `SELECT em.id, u.firstname || ' ' || u.lastname, e.name, e.id FROM etablishment AS e 
+    employeeList, err := conn.QueryContext(context.Background(), `SELECT em.id, u.firstname || ' ' || u.lastname, e.name, e.id, e.user_id FROM etablishment AS e 
     LEFT JOIN employee AS em ON em.etablishment_id=e.id LEFT JOIN users AS u ON u.id=em.user_id WHERE e.id=$1`, e.Id)
     if err != nil{
         log.Printf("error in the query: %s", err)
         return
     }
     for employeeList.Next(){
-        if err = employeeList.Scan(&id, &name, &e.Name, &e.Id); err != nil{
+        if err = employeeList.Scan(&id, &name, &e.Name, &e.Id, &e.UserId); err != nil{
             log.Printf("error scan: %s", err)
         }
         employee.Name = name.String
@@ -252,6 +320,37 @@ func (e *Etablishment) Public(conn *sql.Conn)(int, error){
 		e.Review = append(e.Review, review)
 	}
     return weekDay, nil
+}
+
+func UploadEtablishmentPhoto(f multipart.File, name string)error{
+	config, _, err := image.DecodeConfig(f)
+	if err != nil{
+		log.Printf("error decoding the file: %s", err)
+		return errors.New("error decoding the file")
+	}
+	if config.Height <= 400 && config.Width <= 400{
+		log.Println("no need to ffmpeg the image too small")
+		//TODO: Insert direct l'image dans le bucket elle est conforme a la taille
+		return nil
+	}
+	temporary, err := os.CreateTemp("", name)
+	if err != nil{
+		log.Printf("error creating temp file: %s", err)
+		return errors.New("error creating temp file")
+	}
+	defer temporary.Close()
+	_, err = io.Copy(temporary, f)
+	if err != nil{
+		log.Printf("error copying to temporary file: %s", err)
+		return errors.New("error copying to temp file")
+	}
+	cmd := exec.Command("bash", "convert-image.sh", temporary.Name())
+	if err = cmd.Run(); err != nil{
+		log.Printf("error running the command: %s", err)
+		return errors.New("error command ffmpeg")
+	}
+	//TODO: Insert la nouvelle image avec la bon taille dans le bucket
+	return nil
 }
 
 func Payments(conn *sql.Conn)[]string{

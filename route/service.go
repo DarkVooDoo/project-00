@@ -87,19 +87,20 @@ func (s *ServiceRoute) Post(w http.ResponseWriter, r *http.Request){
 		        <label for="name" class="form-label">Nom</label>
 		        <input type="text" class="form-input" id="name" value="{{.Name}}" autocomplete="off" />
 		      </div>
-		      <div class="field">
-		        <label for="duration" class="form-label">Duration (min)</label>
-		        <input type="number" class="form-input" id="duration" value="{{.Duration}}" autocomplete="off" />
-		      </div>
+
 		      <div class="doubleField">
-		        <div class="field">
-		          <label for="price" class="form-label">Prix</label>
-		          <input type="number" class="form-input" id="price" value="{{.Price}}" autocomplete="off" />
-		        </div>
-		        <div class="field">
-		          <label for="solde" class="form-label">Solde (%)</label>
-		          <input type="number" class="form-input" id="solde" min="O" max="100" value="{{.Discount}}" />
-		        </div>
+		      		<div class="field">
+		      		  <label for="duration" class="form-label">Duration (min)</label>
+		      		  <input type="number" class="form-input" id="duration" value="{{.Duration}}" autocomplete="off" />
+		      		</div>
+		        	<div class="field">
+		        	  <label for="price" class="form-label">Prix</label>
+		        	  <input type="number" class="form-input" id="price" value="{{.Price}}" autocomplete="off" />
+		        	</div>
+		        	<div class="field">
+		        	  <label for="solde" class="form-label">Solde (%)</label>
+		        	  <input type="number" class="form-input" id="solde" min="O" max="100" value="{{.Discount}}" />
+		        	</div>
 		      </div>
 		    </div>
 		    <div class="form-group">

@@ -24,8 +24,8 @@ func (va ViewAppointmentRoute) ServeHTTP(w http.ResponseWriter, r *http.Request)
     switch r.Method{
         case http.MethodPost:
             va.Post(w,r)
-        case http.MethodDelete:
-            va.Delete(w, r)
+		case http.MethodPut:
+			va.Put(w,r)
         default:
             va.Get(w, r)
     }
@@ -61,30 +61,33 @@ func (va ViewAppointmentRoute) Post(w http.ResponseWriter, r *http.Request){
     }
 	conn := model.GetDBPoolConn()
 	defer conn.Close()
-	appointment := model.Appointment{Id: r.PathValue("id"), UserId: va.User.Id, EmployeeId: va.User.Employee}
-	if err := appointment.Complete(conn); err != nil{
+	appointment := model.Appointment{Id: r.PathValue("id"), UserId: va.User.Id, EmployeeId: va.User.Employee, Status: r.FormValue("status")}
+	if err := appointment.UpdateStatus(conn); err != nil{
 		log.Printf("error we cant complete the appointment")
 		DisplayNotification(Notitification{"Echoué", "requete impossible", "error"}, w)
 		return
 	}
-	updatePage("Terminé", r.Referer(), w)
+	updatePage(appointment.Status, r.Referer(), w)
 	DisplayNotification(Notitification{"Reussi", "Rendez-vous terminé", "success"}, w)
 }
 
-func (a ViewAppointmentRoute) Delete(w http.ResponseWriter, r *http.Request){
-    var user model.UserClaim
-    if err := VerifyToken(r, w, &user); err != nil{
-        log.Printf("error noauthorized")
-        return
-    }
-    appointment := model.Appointment{UserId: user.Id, EmployeeId: user.Employee, Id: r.PathValue("id"), EtablishmentId: user.Etablishment}
-    if err := appointment.Delete(); err != nil{
-		DisplayNotification(Notitification{"Echoué", "Suppresion impossible", "error"}, w)
-        return
-    }
-
-	updatePage("Annulé", r.Referer(), w)
-	DisplayNotification(Notitification{"Reussi", "Rendez-vous annulé", "success"}, w)
+func (va ViewAppointmentRoute) Put(w http.ResponseWriter, r *http.Request){
+	if err := VerifyToken(r, w, &va.User); err != nil{
+		log.Printf("unauthorized")
+		return
+	}
+	appointment := model.Appointment{Id: r.PathValue("id"), EtablishmentId: va.User.Etablishment, UserId: va.User.Id}
+	if err := ReadJsonBody(r.Body, &appointment); err != nil{
+		log.Println("error reading the payload")
+		return
+	}
+	conn := model.GetDBPoolConn()
+	defer conn.Close()
+	if err := appointment.UpdateAppointment(conn, va.User.Employee); err != nil{
+		DisplayNotification(Notitification{"Error", "requête échoué", "error"}, w)
+		return
+	}
+	w.Header().Add("HX-Redirect", "/planning")
 }
 
 func updatePage(t string, referer string, w http.ResponseWriter){

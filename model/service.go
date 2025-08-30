@@ -19,6 +19,7 @@ type Service struct{
     Checked bool
     CurrencyPrice string
     EtablishmentId int64
+	AppointmentId int64
 }
 
 func (s *Service) Create()error{

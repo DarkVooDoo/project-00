@@ -6,14 +6,54 @@
     .card-header {
         padding: 1.5rem;
         border-bottom: 1px solid var(--border-color);
+        background: var(--primary-color);
         .card-title {
           font-size: 1.5rem;
           font-weight: 600;
           margin-bottom: 0.5rem;
+          color: white;
         }
         .card-description {
-          color: var(--text-color-helper);
+          color: white; 
           font-size: 0.875rem;
+        }
+    }
+    .facade-form{
+        width: 300px;
+        aspect-ratio: 1 / .8;
+        margin: 1rem auto;
+        .etablishment-facade{
+            outline: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+            margin-bottom: .5rem;
+            position: relative;
+            overflow: hidden;
+            #facade{
+                display:none;
+            }
+            #facade-label{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                width: 100%;
+            }
+            #preview-facade{
+                position: absolute;
+                top: 0;
+                pointer-events: none;
+                height: 100%;
+                width: 100%;
+                object-fit: fill;
+            }
+        }
+
+        .facade-submit{
+            width: 100%;
+            height: 2rem;
+            border-radius: 10px;
         }
     }
     .card-content {
@@ -93,7 +133,7 @@
             }
             
             .form-checkbox:checked {
-              background-color: var(--primary-color);
+              background: var(--primary-color);
               background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
               background-repeat: no-repeat;
               background-position: center;
@@ -142,7 +182,6 @@
             border-radius: 0.375rem;
             font-size: 0.875rem;
             font-weight: bold;
-            transition: background-color 0.15s ease;
             &:disabled{
                 background-color: gray !important;
             }

@@ -3,7 +3,6 @@
     <link href="/static/my_etablishment.css" rel="stylesheet" >
 {{end}}
 
-
 {{define "Body"}}
     <div class="my-etablishment">
         <div class="header">
@@ -110,10 +109,7 @@
                 </div>
               </section>
               <section class="dashboard-card">
-                <div class="dashboard-card-header">
-                  <h2 class="header-title">Rendez-vous d'aujourd'hui</h2>
-                </div>
-
+              <h2 class="header-title">Rendez-vous d'aujourd'hui</h2>
                 {{range .TodayAppointment}}
                 <div class="dashboard-appointment">
                     <div class="preview">JD</div>
@@ -193,7 +189,7 @@
         const onCreateService = (ele)=>{
             let newService = document.getElementById("new-service")
             if (!newService){
-                ele.parentElement.insertAdjacentHTML("afterend", `
+                ele.parentElement.nextElementSibling.insertAdjacentHTML("beforeend", `
                     <form class="service" id="new-service" hx-post="/etablissement/service" hx-target="#new-service" hx-swap="outerHTML" hx-ext="json-enc-custom">
 	                    <div class="service-header">
 	                        <h1 class="header-title">Nouveau Service</h1>
@@ -216,21 +212,21 @@
 		                      <label for="name" class="form-label">Nom</label>
 		                      <input type="text" name="name" class="form-input" id="name" autocomplete="off" />
 		                    </div>
-		                    <div class="field">
-		                      <label for="duration" class="form-label">Duration (min)</label>
-		                      <input type="number" name="duration" class="form-input" id="duration" autocomplete="off" />
-		                    </div>
 		                    <div class="doubleField">
-		                      <div class="field">
-		                        <label for="price" class="form-label">Prix</label>
-		                        <input type="number" name="price" class="form-input" id="price" autocomplete="off" />
-		                      </div>
-		                      <div class="field">
-		                        <label for="solde" class="form-label">Solde (%)</label>
-		                        <input type="number" name="discount" class="form-input" id="solde" max="100" />
-		                      </div>
+		                        <div class="field">
+		                          <label for="duration" class="form-label">Duration (min)</label>
+		                          <input type="number" name="duration" class="form-input" id="duration" autocomplete="off" />
+		                        </div>
+		                          <div class="field">
+		                            <label for="price" class="form-label">Prix</label>
+		                            <input type="number" name="price" class="form-input" id="price" autocomplete="off" />
+		                          </div>
+		                          <div class="field">
+		                            <label for="solde" class="form-label">Solde (%)</label>
+		                            <input type="number" name="discount" class="form-input" id="solde" max="100" />
+		                          </div>
+		                        </div>
 		                    </div>
-		                  </div>
 		                  <div class="form-group">
 		                    <label for="description" class="form-label">Description</label>
 		                    <textarea id="description" maxlength="150" name="description"></textarea>

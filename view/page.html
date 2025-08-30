@@ -42,7 +42,7 @@
                 </svg>
             </a>
             <div class="navigation">
-              <button type="button" class="searchBtn btn-outline" onclick="openModal('search')" title="Ctrl+S">
+              <button type="button" class="navbar-btn btn-outline" onclick="openModal('search')" title="Ctrl+S">
                   <svg viewBox="0 0 25.129072 33.866664" class="icon">
                     <g transform="translate(-107.7328,-125.01428)">
                       <g transform="matrix(0.40809017,0,0,0.40809017,64.553385,75.055514)">
@@ -135,8 +135,13 @@
                         <div class="sub-section">
                             <h2 class="sub-header">Employée</h2>
                             {{range $index, $v := .Navbar.Employee}}
-                            <button type="button" class="employeeSwitch {{if eq $currentEmployee $v.Id}}current{{end}}" 
-                                hx-put="/planning" hx-vals='{"employee": "{{$v.Id}}"}' hx-swap="none" {{if eq $currentEmployee $v.Id}}disabled{{end}}>{{$v.Value}}</button>
+                            <button type="button" class="employeeSwitch {{if eq $currentEmployee $v.Id}}current{{end}}" hx-put="/planning" hx-vals='{"employee": "{{$v.Id}}"}' hx-swap="none" 
+                                 hx-on:htmx:after-request="if(event.detail.successful){
+                                    for (const btn of this.closest('.sub-section').getElementsByClassName('employeeSwitch')){
+                                        btn.classList.remove('current')
+                                    }
+                                    this.classList.add('current')
+                                }">{{$v.Value}}</button>
                             {{end}}
                         </div>
                       {{end}}
@@ -145,7 +150,7 @@
                               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                               <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                               <g id="SVGRepo_iconCarrier"> 
-                                <path d="M15 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H15M8 8L4 12M4 12L8 16M4 12L16 12" stroke="var(--text-color)" 
+                                <path d="M15 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H15M8 8L4 12M4 12L8 16M4 12L16 12" stroke="white" 
                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> 
                               </g></svg>
                           Deconnexion
@@ -194,43 +199,15 @@
         <main>
             {{template "Body" .}}
         </main>
-        {{/*
         <footer>
-            <div class="footer-content">
-                <div>
-                    <h1>Name</h1>
-                    <p>La plateforme de référence pour gérer vos rendez-vous beauté. Simplicité, efficacité et élégance réunies.</p>
-                </div>
-                <div>
-                    <h2>Pour les Établissements</h2>
-                    <ul>
-                        <li>Gestion des rendez-vous</li>
-                        <li>Gestion des clients</li>
-                        <li>Planning</li>
-                        <li>Gestion des rendez-vous</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>Pour les Clients</h2>
-                    <ul>
-                        <li>Prise de rendez-vous</li>
-                        <li>Historique des soins</li>
-                        <li>Évaluations et avis</li>
-                        <li>Offres exclusives</li>
-                    </ul>
-                </div>
-            </div>
             <div class="footer-bottom">
                 <div>
-                    <span>Conditions d'utilisation</span>
-                    <span>Politique de confidentialité</span>
-                    <span>Mentions légales</span>
-                    <span>CGV</span>
+                    <a href="#">Conditions d'utilisation</a>
+                    <a href="/politique-confidentialite">Politique de confidentialité</a>
                 </div>
                 <span>© 2024 BeautyBook. Tous droits réservés.</span>
             </div>
         </footer>
-        */}}
         <script>
             document.addEventListener("keydown", function(event){
                 if(event.ctrlKey && event.key === "s"){
@@ -305,6 +282,7 @@
                 addr.dataset.valid = "true"
                 container.innerHTML = null
                 container.classList.add("hidden")
+                addr.focus()
             }
         </script>
   </body>

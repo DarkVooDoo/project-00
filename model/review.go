@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-
 type Review struct{
 	Id int64 `json:"id"`
 	UserName string
@@ -22,7 +21,6 @@ type Review struct{
 }
 
 func (r *Review) Get(conn *sql.Conn)error{
-	//TODO: Obtenir les services du rendez-vous
 	reviewGetRow := conn.QueryRowContext(context.Background(), `SELECT r.id, TO_CHAR(LOWER(a.date), 'DD TMMonth YYYY à HH24:MI'), r.review_key, r.employee_id, r.etablishment_id, 
 	u.firstname || ' ' || u.lastname FROM review AS r LEFT JOIN employee AS e ON e.id=r.employee_id LEFT JOIN users AS u ON u.id=e.user_id 
 	LEFT JOIN appointment AS a ON a.id=r.appointment_id WHERE r.user_id=$1 AND r.rating IS  NULL ORDER BY r.created_at DESC`, r.UserId)
@@ -31,6 +29,16 @@ func (r *Review) Get(conn *sql.Conn)error{
 		return errors.New("error getting the review")
 	}
 	return nil
+}
+
+func (r *Review) EtablishmentReview(conn *sql.Conn)float64{
+	var rating float64
+	reviewRows := conn.QueryRowContext(context.Background(), `SELECT AVG(rating) FROM review WHERE etablishment_id=$1`, r.EtablishmentId)
+	if err := reviewRows.Scan(&rating); err != nil{
+		log.Printf("error scanning review: %s", err)
+		return rating
+	}
+	return rating
 }
 
 func(r *Review) Update(conn *sql.Conn)error{

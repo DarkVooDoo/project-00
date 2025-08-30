@@ -49,7 +49,7 @@
             cursor: pointer;
         }
         .nav-btn.selected{
-            background-color: var(--primary-color);
+            background: var(--primary-color);
             font-weight: 600;
             color: white;
         }
@@ -69,15 +69,17 @@
             border-radius: 15px;
             margin-bottom: 1rem;
             background-color: var(--card-color);
+            .header-title{
+                font-size: 1.2rem;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
             .dashboard-card-header{
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 line-height: 2.5rem;
                 margin-bottom: 1rem;
-                .header-title{
-                    font-size: 1.2rem;
-                }
                 .header-action{
                     outline: 1px solid var(--border-color);
                     border-radius: 25px;
@@ -86,9 +88,12 @@
                         padding-inline: 1rem;
                         border-radius: 25px;
                         cursor: pointer;
+                        color: var(--text-color);
                     }
                     .header-btn.selected{
-                        background-color: var(--primary-color);
+                        background: var(--primary-color);
+                        font-weight: 600;
+                        color: white;
                     }
                 }
             }
@@ -186,7 +191,7 @@
             }
             .submitBtn{
                 line-height: 2rem;
-                background-color: var(--primary-color);
+                background: var(--primary-color);
                 color: white;
                 font-weight: bold;
             }
@@ -287,81 +292,75 @@
                     }
                 }
             }
-            .service{
-                max-width: 1000px;
-                box-shadow: var(--card-shadow);
-                border-radius: 10px;
-                margin-bottom: 1rem;
-                container: large / inline-size;
-                background-color: var(--card-color);
-                .service-header{
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 10px 15px;
-                    border-bottom: 1px solid var(--border-color);
-                    .header-title{
-                        font-size: 1.2rem;
-                    }
-                    .command{
+            .service-grid{
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                .service{
+                    box-shadow: var(--card-shadow);
+                    border-radius: 10px;
+                    margin-bottom: 1rem;
+                    background-color: var(--card-color);
+                    .service-header{
                         display: flex;
-                        justify-content: flex-end;
-                        gap: 1rem;
-                        .btn{
-                            padding: .5rem 1rem;
-                            border-radius: 5px;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            gap: .5rem;
-                            .icon{
-                                width: 1.5rem;
-                                aspect-ratio: 1/1;
-                            }
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 10px 15px;
+                        border-bottom: 1px solid var(--border-color);
+                        .header-title{
+                            font-size: 1.2rem;
                         }
-                    }
-                }
-                .body{
-                    display: flex;
-                    gap: 1rem;
-                    padding: 15px;
-                    .form-group{
-                        width: 100%;
-                        .field{
-                            width: 100%;
-                            margin-bottom: .5rem;
-                            .form-input{
-                                width: 100%;
-                                height: 1.5lh;
+                        .command{
+                            display: flex;
+                            justify-content: flex-end;
+                            gap: 1rem;
+                            .btn{
+                                padding: .5rem 1rem;
                                 border-radius: 5px;
-                                padding-inline: 10px;
-                                border: none;
-                                outline: 1px solid var(--border-color);
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                gap: .5rem;
+                                .icon{
+                                    width: 1.5rem;
+                                    aspect-ratio: 1/1;
+                                }
                             }
                         }
-                        .form-label{
-                            display: block;
-                            margin-bottom: .3rem;
-                            color: var(--text-color-helper);
-                            font-size: .9rem;
-                        }
-                        .doubleField{
-                            display: flex;
-                            gap: .5rem;
-                        }
-                        #description{
-                            width: 100%;
-                            border-radius: 5px;
-                            resize: none;
-                            height: 83%;
-                            padding: 5px;
-                        }
                     }
-                    @container large (max-width: 600px){
-                        display: block;
+                    .body{
+                        padding: 15px;
                         .form-group{
+                            width: 100%;
+                            .field{
+                                width: 100%;
+                                margin-bottom: .5rem;
+                                .form-input{
+                                    width: 100%;
+                                    height: 1.5lh;
+                                    border-radius: 5px;
+                                    padding-inline: 10px;
+                                    border: none;
+                                    outline: 1px solid var(--border-color);
+                                }
+                            }
+                            .form-label{
+                                display: block;
+                                margin-bottom: .3rem;
+                                color: var(--text-color-helper);
+                                font-size: .9rem;
+                            }
+                            .doubleField{
+                                display: grid;
+                                grid-template-columns: 1fr 1fr 1fr;
+                                gap: .5rem;
+                            }
                             #description{
-                                height: calc(3lh + 12px);
+                                width: 100%;
+                                border-radius: 5px;
+                                resize: none;
+                                height: 80px;
+                                padding: 5px;
                             }
                         }
                     }
@@ -369,24 +368,6 @@
             }
         }
         
-        .appointment-status{
-            display: flex;
-            justify-content: space-evenly;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            .appointmentBtn{
-                line-height: 2rem;
-                border-radius: 5px;
-                background-color: var(--card-color);
-                outline: 1px solid var(--border-color);
-                width: 300px;
-            }
-            .tab_selected{
-                outline: 2px solid var(--primary-color);
-                font-weight: bold;
-                color: var(--primary-color);
-            }
-        }
         #appointment-cards{
             width: 100%;
             display: flex;
@@ -521,7 +502,7 @@
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
-                                    background-color: var(--primary-color);
+                                    background: var(--primary-color);
                                     font-weight: 500;
                                     border-radius: 50%;
                                 }
@@ -563,7 +544,7 @@
                     }
                     .btn{
                         line-height: 1.5rem;
-                        background-color: var(--primary-color);
+                        background: var(--primary-color);
                         color: white;
                         font-weight: bold;
                         border-radius: 5px;

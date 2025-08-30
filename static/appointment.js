@@ -1,4 +1,3 @@
-
 let cancelModal
 document.addEventListener("DOMContentLoaded", ()=>{
     cancelModal = document.getElementById("cancel-modal")

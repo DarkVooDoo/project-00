@@ -51,7 +51,7 @@
           <div class="appointments-grid">
         {{range .Appointment}}
             <div class="appointment-card">
-              <div id="status-badge" class='appointment-status {{if eq .Status "Terminé"}}completed{{else if eq .Status "Confirmé"}}confirmed{{else}}cancelled{{end}}'>{{.Status}}</div>
+              <div class='appointment-status {{if eq .Status "Terminé"}}completed{{else if eq .Status "Confirmé"}}confirmed{{else}}cancelled{{end}}'>{{.Status}}</div>
               <div class="appointment-time">
                 <svg class="time-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -68,24 +68,18 @@
                 {{.CustomerName}}
               </div>
               
-              <div class="appointment-services">
-                <div class="services-title">Services
-                  <span class="moreIcon">
-                    ?
-                    <div class="moreInfo">
-                        {{range .ServiceList}}
-                            <p class="moreInfo-text">{{.}}</p>
-                        {{end}}
-                     
-                    </div>
-                  </span>    
+            <div class="appointment-services">
+                <p>{{len .ServiceList}} Services</p>
+                <div class="appointment-total">
+                    <span class="total-label">Total:</span>
+                    <span class="total-amount">{{.Price}}</span>
                 </div>
-              </div>
-              
-              <div class="appointment-total">
-                <span class="total-label">Total:</span>
-                <span class="total-amount">{{.Price}}</span>
-              </div>
+                <div class="moreInfo">
+                    {{range .ServiceList}}
+                        <p class="moreInfo-text">{{.}}</p>
+                    {{end}}
+                </div>
+            </div>
               
               <div class="appointment-actions">
                 <a class="btn btn-primary" href="/rendez-vous/{{.Id}}">
@@ -96,7 +90,7 @@
                   Voir
                 </a>
                 {{if eq .Status "Confirmé"}}
-                    <button class="btn btn-danger" hx-delete="/rendez-vous/{{.Id}}" hx-swap="delete">
+                    <button class="btn btn-danger" hx-post="/rendez-vous/{{.Id}}" hx-swap="delete" hx-vals='{"status": "Annulé"}'>
                       <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -117,6 +111,12 @@
         {{end}}
           </div>
         </details>
+        {{else}}
+            <div class="appointment-zero">
+                <h2 class="title">Aucun employé enregistré</h2>
+                <p class="desc">Cet établissement n'a actuellement aucun employé enregistré dans le système.</p>
+                <button type="button" hx-get="/etablissement/employee" hx-target="#content" class="employeeBtn btn-primary">Ajouter un employé</button>
+            </div>
         {{end}}
     </div>
 {{end}} 

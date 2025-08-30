@@ -20,6 +20,8 @@ type NewAppointment struct{
     Service []model.ServicePayload `json:"service"`
     Time string `json:"time"`
     Date string `json:"date"`
+	Phone string `json:"phone"`
+	Name string `json:"name"`
 }
 
 var NewAppointmentHandler http.Handler = &NewAppointment{}
@@ -81,7 +83,15 @@ func (n NewAppointment) Post(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	etablishmentId, _ := strconv.Atoi(r.PathValue("id"))
-    var newAppointment model.Appointment = model.Appointment{EmployeeId: n.EmployeeId, Date: fmt.Sprintf("%s %s", n.Date, n.Time), UserId: n.User.Id, Services: n.Service, EtablishmentId: int64(etablishmentId)}
+    var newAppointment model.Appointment = model.Appointment{
+		EmployeeId: n.EmployeeId, 
+		Date: fmt.Sprintf("%s %s", n.Date, n.Time), 
+		UserId: n.User.Id, 
+		Services: n.Service, 
+		EtablishmentId: int64(etablishmentId),
+		CustomerName: n.Name,
+		Contact: n.Phone,
+	}
     if err := newAppointment.Create(); err != nil{
         DisplayNotification(Notitification{"Error", "requete echoué", "error"}, w)
         return

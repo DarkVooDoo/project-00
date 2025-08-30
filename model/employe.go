@@ -19,6 +19,7 @@ type Employe struct{
     Picture string
 	Joined string
 	TotalClient int
+	IsActive bool
 	TotalMoney string
     EtablishmentId int64
     UserId int64
@@ -75,11 +76,13 @@ func (e *Employe) GetEtablishmentEmployees(conn *sql.Conn)[]Employe{
 	FROM etablishment AS e RIGHT JOIN employee AS em ON em.etablishment_id=e.id LEFT JOIN users AS u ON u.id=em.user_id WHERE e.id=$1 AND is_active`, e.EtablishmentId)
 
     if err != nil{
+		log.Printf("error getting employees: %s", err)
         logg.Error("error getting employees", "description", err)
         return allEmployee
     }
     for etablishmentEmployee.Next(){
         if err = etablishmentEmployee.Scan(&e.Id, &schedule, &e.Name, &e.ShortName, &e.Joined); err != nil{
+			log.Printf("error scanning row: %s", err)
             logg.Info("error scanning row", "error scanning", err)
         }
         if schedule.Valid{
@@ -168,7 +171,7 @@ func (e *Employe) Delete()error{
     conn := GetDBPoolConn()
     defer conn.Close()
 
-    result, err := conn.ExecContext(context.Background(), `UPDATE employee SET is_active=false WHERE id=$1`, e.Id)
+    result, err := conn.ExecContext(context.Background(), `UPDATE employee SET is_active=$4 WHERE id=$1 AND etablishment_id=$2 OR id=$1 AND user_id=$3`, e.Id, e.EtablishmentId, e.UserId, e.IsActive)
     if err != nil{
         logg.Error("Error", "description", err)
         return errors.New("error deleting employee")

@@ -55,9 +55,10 @@
         var map = L.map('map').setView([{{.NavbarData.Latitude}}, {{.NavbarData.Longitude}}], 13);
         // add the OpenStreetMap tiles
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+          maxZoom: 19
         }).addTo(map);
+        let userIcon = L.icon({iconUrl: "/static/position-man.png", iconSize: [24, 24]})
+        let myPosition = L.marker([{{.NavbarData.Latitude}}, {{.NavbarData.Longitude}}], {icon: userIcon}).addTo(map)
         var circle = L.circle([{{.NavbarData.Latitude}}, {{.NavbarData.Longitude}}], {
             color: '#BEE9E8',
             fillColor: '#62B6CB',
@@ -72,6 +73,8 @@
             const etablishmentContainer = document.getElementById("etablishment")
             const query = document.getElementById("query")
             map.removeLayer(circle)
+            map.removeLayer(myPosition)
+            myPosition = L.marker([map.getCenter().lat, map.getCenter().lng], {icon: userIcon}).addTo(map)
             circle = L.circle([map.getCenter().lat, map.getCenter().lng], {
                 color: '#BEE9E8',
                 fillColor: '#62B6CB',

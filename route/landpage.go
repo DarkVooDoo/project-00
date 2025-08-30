@@ -14,6 +14,7 @@ import (
 type Landpage struct{
     User model.UserClaim
     Etablishments []model.Etablishment
+	Recent []model.Etablishment
     NextAppointment model.Appointment
 	Navbar model.CacheNavbar
 	Review model.Review
@@ -29,7 +30,10 @@ var LandpageHandler http.Handler = &Landpage{}
 
 func (l Landpage) ServeHTTP(w http.ResponseWriter, r *http.Request){
     if r.URL.Path != "/"{
-        http.NotFound(w, r)
+		VerifyToken(r, w, &l.User)
+		if err := CreatePage(l, w, "view/page.html", "view/notfound.tmpl"); err != nil{
+			log.Printf("error creating the page: %s", err)
+		}
         return
     }
     switch r.Method{
@@ -42,10 +46,11 @@ func (l Landpage) Get(w http.ResponseWriter, r *http.Request){
 	err := VerifyToken(r, w, &l.User)
     conn := model.GetDBPoolConn()
     defer conn.Close()
-    var e model.Etablishment
-    l.Etablishments = e.Latest(conn)
-    if err == nil{
-        var appointment model.Appointment = model.Appointment{UserId: l.User.Id}
+	if err == nil{
+		e := model.Etablishment{UserId: l.User.Id} 
+		appointment := model.Appointment{UserId: l.User.Id}
+		l.Etablishments = e.Latest(conn)
+		l.Recent = e.Recent(conn)
 		review := model.Review{UserId: l.User.Id}
 		if err := review.Get(conn); err != nil{
 			log.Printf("error getting the review: %s", err)

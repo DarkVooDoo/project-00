@@ -5,26 +5,28 @@
 {{end}}
 
 {{define "Body"}}
+    {{$currentPage := .CurrentPage}}
+    {{$status := .Type}}
     <div class="container">
         <div class="card">
             <div class="card-header">
               <h1 class="card-title">Mes Rendez-vous</h1>
               <div class="header-actions">
                 <div class="search-box">
-                  <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
-                  <input type="text" class="search-input" placeholder="Rechercher un rendez-vous..." id="search-input">
+                  <input type="text" class="search-input" placeholder="Rechercher un rendez-vous..." id="search-input" hx-post="/rendez-vous" hx-swap="none">
                 </div>
               </div>
             </div>
             <div class="card-content">
               <div class="filter-group" id="filter-group" hx-boost="true">
-                <a class="filter-btn {{if eq .Type ""}}active{{end}}" data-filter="all" href="/rendez-vous">Tous</a>
-                <a class="filter-btn {{if eq .Type "upcomming"}}active{{end}}" data-filter="upcoming" href="/rendez-vous?type=upcomming">À venir</a>
-                <a class="filter-btn {{if eq .Type "foregoing"}}active{{end}}" data-filter="completed" href="/rendez-vous?type=foregoing">Terminés</a>
-                <a class="filter-btn {{if eq .Type "cancelled"}}active{{end}}"  data-filter="cancelled" href="/rendez-vous?type=cancelled" href="#">Annulés</a>
+                <a class="filter-btn {{if eq .Type ""}}active btn-disable{{end}}" href="/rendez-vous">Tous</a>
+                <a class="filter-btn {{if eq .Type "upcomming"}}active btn-disable{{end}}" href="/rendez-vous?type=upcomming">À venir</a>
+                <a class="filter-btn {{if eq .Type "foregoing"}}active btn-disable{{end}}" href="/rendez-vous?type=foregoing">Terminés</a>
+                <a class="filter-btn {{if eq .Type "cancelled"}}active btn-disable{{end}}" href="/rendez-vous?type=cancelled">Annulés</a>
               </div>
               
               <div class="appointment-list" id="appointment-list">
@@ -40,7 +42,7 @@
                           </div>
                           <div class="appointment-body">
                             <div class="appointment-info">
-                              <svg class="appointment-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <svg class="appointment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                               </svg>
@@ -113,17 +115,19 @@
                   {{end}}
               
               <!-- Pagination -->
-              <div class="pagination">
+              <div class="pagination" hx-boost="true">
                 <button class="page-btn disabled">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
                 </button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
+                {{range $i, $v := .PageCount}}
+                    {{if not (eq $i 0)}}
+                        <a class="page-btn {{if eq $i $currentPage}}active btn-disable{{end}}" href="/rendez-vous?type={{$status}}&page={{$i}}">{{$i}}</a>
+                    {{end}}
+                {{end}}
                 <button class="page-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>

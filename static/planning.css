@@ -52,7 +52,7 @@
                 color: var(--border-color);
             }
             .dayBtn.selected{
-                background-color: var(--primary-color);   
+                background: var(--primary-color);   
                 color: white;
                 transition: background-color .4s linear;
                 @starting-style{
@@ -79,7 +79,7 @@
             gap: 1rem;
             margin-bottom: 1rem;
             .info{
-                aspect-ratio: 1 / 1;
+                height: 100px;
                 background-color: var(--card-color);
                 display: flex;
                 align-items: center;
@@ -89,7 +89,9 @@
                 box-shadow: var(--card-shadow);
                 .number{
                     font-size: 2rem;
-                    color: var(--primary-color);
+                    background-image: var(--primary-color);
+                    background-clip: text;
+                    color: transparent;
                 }
                 .label{
                     color: var(--text-color-helper);
@@ -102,32 +104,12 @@
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
             text-decoration: none;
             border: none;
-        }
-
-        .btn-primary {
-            background-color: #8483dc;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #7271c7;
-        }
-
-        .btn-secondary {
-            background-color: white;
-            color: #374151;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-secondary:hover {
-            background-color: #f9fafb;
         }
 
         .btn-icon {
@@ -313,7 +295,7 @@
         }
 
         .modal {
-            background-color: white;
+            background-color: var(--card-color);
             border-radius: 0.75rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             max-width: 500px;
@@ -329,7 +311,7 @@
         }
 
         .modal-header {
-            background-color: #8483dc;
+            background: var(--primary-color);
             color: white;
             padding: 1.5rem;
             position: relative;
@@ -381,9 +363,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            background-color: #f9fafb;
+            padding: 0.5rem;
             border-radius: 0.5rem;
         }
 
@@ -399,28 +379,27 @@
         }
 
         .detail-label {
-            font-size: 0.75rem;
-            color: #6b7280;
+            font-size: 0.9rem;
+            color: var(--text-color-helper);
             margin-bottom: 0.25rem;
         }
 
         .detail-value {
-            font-size: 0.875rem;
             font-weight: 500;
-            color: #111827;
+            color: var(--text-color);
         }
 
         .services-list {
-            background-color: #f9fafb;
+            outline: 1px solid var(--border-color);
             border-radius: 0.5rem;
             padding: 1rem;
             margin-bottom: 1rem;
         }
 
         .services-title {
-            font-size: 0.875rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #111827;
+            color: var(--text-color);
             margin-bottom: 0.75rem;
         }
 
@@ -429,42 +408,26 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.5rem 0;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .service-item:last-child {
             border-bottom: none;
+            .service-price, .service-name{
+                font-weight: 700;
+            }
+            .service-price{
+                color: var(--primary-color);
+            }
         }
 
         .service-name {
-            font-size: 0.875rem;
-            color: #374151;
+            color: var(--text-color);
         }
 
         .service-price {
-            font-size: 0.875rem;
             font-weight: 500;
-            color: #8483dc;
-        }
-
-        .total-section {
-            background-color: #8483dc;
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .total-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-bottom: 0.25rem;
-        }
-
-        .total-amount {
-            font-size: 1.5rem;
-            font-weight: 700;
+            color: var(--text-color);
         }
 
         .modal-actions {
@@ -516,6 +479,25 @@
 
             .modal-actions {
                 flex-direction: column;
+            }
+        }
+        .close-card{
+            border-radius: 10px;
+            padding: 15px;
+            outline: 1px solid var(--border-color);
+            text-align: center;
+            background: var(--card-color);
+            .icon{
+                height: 3rem;
+                aspect-ratio: 1/1;
+                margin-bottom: .5rem;
+            }
+            .title{
+                font-size: 1.3rem;
+                margin-bottom: .5rem;
+            }
+            .more{
+                color: var(--text-color-helper);
             }
         }
     }

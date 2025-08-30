@@ -18,6 +18,8 @@ func (p ProParametreRoute) ServeHTTP(w http.ResponseWriter, r *http.Request){
     switch r.Method{
 		case http.MethodPost:
 			p.Post(w, r)
+		case http.MethodPut:
+			p.Put(w, r)
         default:
             p.Get(w, r)
     }
@@ -64,4 +66,22 @@ func(p ProParametreRoute) Post(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	DisplayNotification(Notitification{"Reussi", "Parametre mise a jour", "success"}, w)
+}
+
+func (p ProParametreRoute) Put(w http.ResponseWriter, r *http.Request){
+	if err := VerifyToken(r, w, &p.User); err != nil{
+		log.Printf("unauthorized")
+		DisplayNotification(Notitification{"Error", "error dans le requete", "error"}, w)
+		return
+	}
+	f, header, err := r.FormFile("facade")
+	if err != nil{
+		DisplayNotification(Notitification{"Error", "error dans le requete", "error"}, w)
+		return
+	}
+	if err = model.UploadEtablishmentPhoto(f, header.Filename); err != nil{
+		DisplayNotification(Notitification{"Error", "error dans le requete", "error"}, w)
+		return
+	}
+
 }

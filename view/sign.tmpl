@@ -1,5 +1,6 @@
 {{define "Head"}}
     <title>Connexion</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
     <style>
         main{
             display: flex;
@@ -97,7 +98,7 @@
                         border-radius: 25px;
                         font-weight: bold;
                         cursor: pointer;
-                        margin-bottom: .5rem;
+                        margin-bottom: 1rem;
                     }
                 }
             }
@@ -130,7 +131,22 @@
         </div>
         <button type="button" class="switchScreen" style="float: right;width: fit-content;color:var(--primary-color)">Mot de passe oublié?</button>
         <button type="submit" class="submitBtn btn-primary">Connexion</button>
-        
+        <div style="display:flex;justify-content:center;margin-bottom:1rem">
+            <div id="g_id_onload"
+                data-client_id="432757696898-pbn4r01ut5ejpnrs342foham08ger5rp.apps.googleusercontent.com"
+                data-callback="handleCredentialResponse"
+                data-auto_prompt="false">
+            </div>
+
+            <div class="g_id_signin"
+                data-type="standard"
+                data-shape="pill"
+                data-theme="filled_blue"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left">
+            </div>
+        </div>
         <button type="button" class="switchScreen" onclick="onSwitchScreen()">Vous n'avez pas de compte? Inscrivez-vous</button>
     </form>
 
@@ -192,6 +208,17 @@
             }else{
                 brandName.innerHTML = "Connexion"
             }
+        }
+
+         async function handleCredentialResponse(response){
+            const signIn = await fetch(`/connexion`, {
+                method: "POST",
+                headers: [["Content-Type", "application/x-www-form-urlencoded"]],
+                body: new URLSearchParams({
+                    cred: response.credential
+                })
+
+            })
         }
 
     </script>

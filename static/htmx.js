@@ -140,8 +140,6 @@
             context[step.key] = value;
         }
 
-        //TODO: make merge functionality and file suport.
-
         //check if the context value already exists
         if (context[step.key] === undefined) {
             if (step.type === "object") {

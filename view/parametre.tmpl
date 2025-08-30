@@ -5,6 +5,14 @@
             <h1 class="card-title">Informations de l'établissement</h1>
             <p class="card-description">Modifiez les informations de votre établissement</p>
         </div>
+        <form class="facade-form" hx-put="/etablissement/parametre" hx-encoding="multipart/form-data" hx-swap="none">
+            <div class="etablishment-facade">
+                <input type="file" id="facade" name="facade" />
+                <label for="facade" id="facade-label">Choisir une photo</label>
+                <img id="preview-facade" />
+            </div>
+            <button type="submit" class="facade-submit btn-primary">Enregistrer</button>
+        </form>
         <form hx-post="/etablissement/parametre" hx-swap="none" hx-ext="json-enc-custom" hx-disabled-elt="find .btn-primary">
             <div class="card-content">
                 <div class="form-group">
@@ -96,12 +104,11 @@
         </form>
     </div>
 
-    {{/*
   <script>
     // Photo preview functionality
-    const photoInput = document.getElementById('photo');
-    const previewImg = document.getElementById('preview-img');
-    const previewIcon = document.querySelector('.photo-preview-icon');
+    const photoInput = document.getElementById('facade');
+    const previewImg = document.getElementById('preview-facade');
+    //const previewIcon = document.querySelector('.photo-preview-icon');
     
     photoInput.addEventListener('change', function() {
       if (this.files && this.files[0]) {
@@ -110,11 +117,10 @@
         reader.onload = function(e) {
           previewImg.src = e.target.result;
           previewImg.style.display = 'block';
-          previewIcon.style.display = 'none';
+          //previewIcon.style.display = 'none';
         }
         
         reader.readAsDataURL(this.files[0]);
       }
     });
   </script>
-    */}}

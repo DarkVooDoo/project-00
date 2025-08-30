@@ -1,6 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap');
 
+@property --hover{
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 0%;
+}
+
 :root{
+    --hover: 0%;
     --card-shadow: 0px 3px 5px 2px rgba(140,140,140,0.4);
     --bg-color: #f1f1f1;
     --card-color: white;
@@ -8,7 +15,7 @@
     --planning-card-completed: #eff6ff;
     --text-color: black;
     --text-color-helper: #4a505d;
-    --primary-color: #2624f3;
+    --primary-color: linear-gradient(140deg, #2624f3 var(--hover), #6664fc 100%);
     --primary-color-hover: #0c0ac9;
     --border-color: #C9C9C9;
     --hover-color: #e7e7e7;
@@ -34,7 +41,7 @@
 
 @media (prefers-color-scheme: dark) { 
     :root {
-        --bg-color: black;
+        --bg-color: #101010;
         --text-color: white;
         --card-color: #181818;
         --border-color: #2b2b2b;
@@ -68,6 +75,7 @@ main{
     margin-inline: 1rem; 
     min-height: calc(100vh - 50px);
 }
+
 
 @keyframes notification{
     20%{
@@ -125,7 +133,7 @@ nav{
     .navigation{
         display: flex;
         gap: 1rem;
-        .searchBtn{
+        .navbar-btn{
             height: 2.5rem;
             aspect-ratio: 1/1;
             display: flex;
@@ -256,7 +264,7 @@ nav{
             .sub-section{
                 border-bottom: 1px solid var(--border-color);
                 .sub-header{
-                    color: #BDBDBD;
+                    color: var(--text-color-helper);
                     padding: 10px 15px;
                     font-size: 1.2rem;
                 }
@@ -284,7 +292,7 @@ nav{
                         height: 10px;
                         display: block;
                         border-radius: 50%;
-                        background-color: var(--primary-color);
+                        background: var(--primary-color);
                     }
                 }
                 .sub-btn{
@@ -443,7 +451,7 @@ nav{
     .signBtn{
         padding: .5rem;
         border-radius: 5px;
-        background-color: var(--primary-color);
+        background: var(--primary-color);
         font-weight: 600;
         color: white;
     }
@@ -451,25 +459,26 @@ nav{
 
 footer{
     background-color: var(--card-color);
-    padding-inline: 10px;
-    .footer-content{
-        margin-block: 1rem;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
+    container: footer / inline-size;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
     .footer-bottom{
-        border-top: 1px solid var(--text-color);
-        padding-block: 1rem;
+        padding-block: 1.5rem 1rem;
+        text-align: center;
     }
 }
 
+.btn-disable{
+    pointer-events: none;
+}
+
 .btn-primary {
-    background-color: var(--primary-color);
+    background: linear-gradient(140deg, #2624f3 var(--hover), #6664fc 100%);
     color: white;
     border: none;
     &:hover {
-        background-color: var(--primary-color-hover);
+        --hover: 100%;
     }
 }
 
@@ -485,19 +494,27 @@ footer{
 .btn-danger {
     background-color: var(--warning-btn-color);
     color: white;
-    border: none;
     &:hover {
         background-color: var(--warning-btn-color-hover);
     }
 }
 
-.btn-danger, .btn-primary, .btn-outline{
+.btn-success {
+    background: #10b981;
+    color: white;
+    &:hover{
+        background-color: #059669;
+    }
+}
+
+.btn-danger, .btn-primary, .btn-outline, .btn-success{
     cursor: pointer;
-    transition: background-color 200ms linear;
+    transition: --hover 200ms linear, background 200ms linear;
 }
 
 button{
     background-color: transparent;
+    border: none;
 }
 
 a{
@@ -543,7 +560,30 @@ input:focus, textarea:focus, select:focus{
     outline-color: var(--primary-color) !important;
     box-shadow: 0 0 2px 2px rgb(38 36 243 / 65%);
 }
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: lightgray; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: darkgray; 
+}
 
 .hidden{
     display: none !important;
 }
+

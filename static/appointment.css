@@ -1,4 +1,3 @@
-
 .appointment{
     border-radius: 10px;
     padding: 15px 20px;
@@ -93,7 +92,7 @@
                 }
 
                 .filter-btn.active {
-                    background-color: var(--primary-color);
+                    background: var(--primary-color);
                     color: white;
                     border-color: var(--border-color);
                 }
@@ -120,8 +119,8 @@
                             color: var(--text-color);
                         }
                         .appointment-id {
-                            font-size: 0.75rem;
-                            color: #6b7280;
+                            font-size: 0.85rem;
+                            color: var(--text-color-helper);
                         }
                         .status-badge {
                             padding: 0.25rem 0.75rem;
@@ -199,7 +198,6 @@
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.15s ease;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -256,7 +254,7 @@
 }
 
 .page-btn.active {
-  background-color: var(--primary-color);
+  background: var(--primary-color);
   color: white;
   border-color: var(--border-color);
 }

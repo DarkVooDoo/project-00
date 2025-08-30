@@ -12,7 +12,7 @@
             container: card / inline-size;
             .card-header {
                 padding: 1.5rem;
-                border-bottom: 1px solid #e5e7eb;
+                background: var(--primary-color);
                 .card-title {
                   font-size: 1.5rem;
                   font-weight: 600;
@@ -20,7 +20,6 @@
                 }
                 
                 .card-description {
-                  color: var(--text-color-helper);
                   font-size: 1rem;
                 }
             }
@@ -69,8 +68,8 @@
                             }
                             
                             .form-checkbox:checked {
-                                background-color: var(--primary-color);
-                                border-color: var(--primary-color);
+                                background-color: #2624f3;
+                                border-color: #2624f3;
                                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
                                 background-repeat: no-repeat;
                                 background-position: center;
@@ -79,6 +78,35 @@
                             .checkbox-label {
                                 font-size: 0.875rem;
                                 color: var(--text-color);
+                            }
+                        }
+                    }
+                }
+
+                #no-account{
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-bottom: 1rem;
+                    outline: 1px solid var(--border-color);
+                    .title{
+                        font-size: 1.1rem;
+                        margin-bottom: 1rem;
+                    }
+                    #user-info{
+                        margin-top: .5rem;
+                        display: grid;
+                        gap: .5rem;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        .input-group{
+                            .label{
+                                display: block;
+                                margin-bottom: .3rem;
+                            }
+                            .input{
+                                padding-inline: 10px;
+                                border-radius: 5px;
+                                line-height: 2rem;
+                                width: 100%;
                             }
                         }
                     }
@@ -172,12 +200,12 @@
                 .btn{
                     padding-inline: 1rem;
                     &[disabled]{
-                        background-color: var(--button-bg-disabled);
+                        background: var(--button-bg-disabled);
                         color: gray;
                         cursor: auto;
                     }
                     &[selected]{
-                        background-color: var(--primary-color);
+                        background: var(--primary-color);
                         font-weight: 600;
                         color: white;
                     }
@@ -218,7 +246,7 @@
             <div class="form-group">
                 <label class="form-label">Services souhaités</label>
                 <div class="input-wrapper">
-                  <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                   </svg>
                   <span class="helper-text">Sélectionnez les services que vous souhaitez réserver</span>
@@ -238,7 +266,7 @@
             <div class="form-group">
                 <label class="form-label">Date et heure du rendez-vous</label>
                 <div class="input-wrapper">
-                  <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -256,6 +284,21 @@
             <div id="time">
                 
             </div>
+            {{if eq .Etablishment.UserId .User.Id}}
+            <div id="no-account">
+                <h3 class="title">Rendez-vous rapide</h3>
+                <div id="user-info">
+                    <div class="input-group">
+                        <label for="name" class="label">Name</label>
+                        <input type="text" id="name" name="name" class="input" autocomplete="off" placeholder="Nom" />
+                    </div>
+                    <div class="input-group">
+                        <label for="phone" class="label">Téléphone</label>
+                        <input type="phone" id="phone" name="phone" class="input" autocomplete="off" placeholder="Télephone" />
+                    </div>
+                </div>
+            </div>
+            {{end}}
             <button type="submit" class="btn btn-primary">Confirmer</button>
         </form>
     </div>
