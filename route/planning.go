@@ -185,7 +185,7 @@ func (p PlanningPayload) Put(w http.ResponseWriter, r *http.Request){
 		log.Printf("error you are no employee here")
 		return
 	}
-	if err := model.CreateAccessToken(user.Id, user.ShortName, user.Picture, user.Etablishment, int64(employeeId), w); err != nil{
+	if err := model.CreateAccessToken(user.Id, user.ShortName, user.Etablishment, int64(employeeId), w); err != nil{
 		log.Printf("error creating the token: %s", err)
 		return
 	}

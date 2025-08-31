@@ -295,9 +295,10 @@ func (a *Appointment) UserAppointment(conn *sql.Conn, page int)(appointmentList 
 	}
 
     appointmentRow, err := conn.QueryContext(context.Background(), `SELECT a.id, u.firstname || ' ' || u.lastname, et.adresse || ', ' || et.postal, et.id,
-    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), a.total, a.status,
+    TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth YYYY - HH24:MI'), a.status,
     (SELECT array_to_string(array_agg(s.name), ', ') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id), 
-    (SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id) 
+    (SELECT array_to_string(array_agg(s.id), ',') FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+    (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id) 
     FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id 
     LEFT JOIN employee AS e ON e.id=a.employee_id LEFT JOIN users AS u ON u.id=e.user_id WHERE a.user_id=$1 AND 
 	CASE $2 
@@ -312,7 +313,7 @@ func (a *Appointment) UserAppointment(conn *sql.Conn, page int)(appointmentList 
         return
     }
     for appointmentRow.Next(){
-        if err := appointmentRow.Scan(&a.Id, &a.EmployeeName, &a.Adresse, &a.EtablishmentId, &a.Date, &a.Price, &a.Status, &a.Service, &a.ServiceTook); err != nil{
+        if err := appointmentRow.Scan(&a.Id, &a.EmployeeName, &a.Adresse, &a.EtablishmentId, &a.Date, &a.Status, &a.Service, &a.ServiceTook, &a.Price); err != nil{
             continue
         }
         appointmentList = append(appointmentList, *a)
@@ -411,7 +412,7 @@ func (a Appointment) EtablishmentAppointments(conn *sql.Conn)(ewa []EmployeeWith
 	for _, v := range employeeList{
 		appointmentList = []Appointment{}
     	aList, err := conn.QueryContext(context.Background(), `SELECT a.id, COALESCE(a.name, u.firstname || ' ' || u.lastname), et.adresse || ', ' || et.postal, c.name,
-    	TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), a.total, a.status,
+    	TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), a.status,
     	(SELECT array_agg(s.name) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)
     	FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN category AS c ON c.id=et.category_id
 		LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND LOWER(a.date)::DATE = $2 AND
@@ -427,7 +428,7 @@ func (a Appointment) EtablishmentAppointments(conn *sql.Conn)(ewa []EmployeeWith
     	    return
     	}
     	for aList.Next(){
-    	    if err = aList.Scan(&a.Id, &a.CustomerName, &a.Adresse, &a.Category, &a.Date, &a.Price, &a.Status, pq.Array(&a.ServiceList)); err != nil{
+    	    if err = aList.Scan(&a.Id, &a.CustomerName, &a.Adresse, &a.Category, &a.Date, &a.Status, pq.Array(&a.ServiceList)); err != nil{
     	        log.Printf("error scanning the columns: %s", err)
     	    }
     	    appointmentList = append(appointmentList, a)

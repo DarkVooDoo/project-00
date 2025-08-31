@@ -2,6 +2,7 @@ package route
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"planify/model"
@@ -47,8 +48,16 @@ func (s Sign) Post(w http.ResponseWriter, r *http.Request){
 		if err != nil{
 			log.Printf("error validating the token: %s", err)
 		}
-		//TODO: Create a new JWT token with his google info cuz google token duration is 1H
-		log.Println(payload.Claims["email"])
+		user := model.User{Email: fmt.Sprintf("%v",payload.Claims["email"]), Firstname: fmt.Sprintf("%v",payload.Claims["name"])}
+		if err := user.SignGoogleAccount(); err != nil{
+			log.Printf("error signing the user")
+		}
+		if err := model.CreateAccessToken(user.Id, user.ShortName, user.EtablishmentId, user.EmployeeId, w); err != nil{
+			log.Printf("error creating the token")
+			return
+		}
+		w.Header().Add("Location", "/")
+		w.WriteHeader(http.StatusTemporaryRedirect)
 		return
 	}
     email := r.FormValue("email")
@@ -60,7 +69,7 @@ func (s Sign) Post(w http.ResponseWriter, r *http.Request){
         w.WriteHeader(http.StatusForbidden)
         return
     }
-    err = model.CreateAccessToken(user.Id, user.ShortName, user.Picture,  user.EtablishmentId, user.EmployeeId, w)
+    err = model.CreateAccessToken(user.Id, user.ShortName, user.EtablishmentId, user.EmployeeId, w)
     if err != nil{
         w.WriteHeader(http.StatusForbidden)
         return

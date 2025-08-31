@@ -65,11 +65,7 @@
               </button>
               {{if .User.Id}}
                   <button type="button" onclick="openModal()" class="user">
-                        {{if .User.Picture}} 
-                            <img src="{{.User.Picture}}" class="picture" />
-                        {{else}}
-                            <b class="picture">{{.User.ShortName}}</b>
-                        {{end}}
+                        <b class="picture">{{.User.ShortName}}</b>
                         {{/*
                         <div id="navigation" popover>
                       </div>

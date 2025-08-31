@@ -37,6 +37,17 @@ func (u *User) Create() error{
     return nil
 }
 
+func (u *User) SignGoogleAccount()error{
+	conn := GetDBPoolConn()
+	defer conn.Close()
+	userRow := conn.QueryRowContext(context.Background(), `SELECT * FROM CreateGoogleAccountOrSignin($1,$2)`, u.Email, u.Firstname)
+	if err := userRow.Scan(&u.Id, &u.Email, &u.ShortName, &u.EtablishmentId, &u.EmployeeId); err != nil{
+		log.Printf("error creating google account: %s", err)
+		return errors.New("error in the query creating google account")
+	}
+	return nil
+}
+
 func (u *User) UploadPhoto(file multipart.File, contentType string)error{
     _, err := S3Client().PutObject(context.Background(), &s3.PutObjectInput{
         Bucket: aws.String("rdv-da"),
@@ -67,8 +78,8 @@ func (u *User) UploadPhoto(file multipart.File, contentType string)error{
 func (u *User) Profile(conn *sql.Conn)error{
     var town, postal, phone, picture sql.NullString
 	var lat, lon sql.NullFloat64
-    profileRow := conn.QueryRowContext(context.Background(), `SELECT firstname, lastname, email, town, postal, geolocation[0], geolocation[1], phone, picture, TO_CHAR(created_at, 'DD TMMonth YYYY') 
-    FROM users WHERE id=$1`, u.Id)
+    profileRow := conn.QueryRowContext(context.Background(), `SELECT firstname, COALESCE(lastname, ''), email, town, postal, geolocation[0], geolocation[1], phone, picture, 
+	TO_CHAR(created_at, 'DD TMMonth YYYY') FROM users WHERE id=$1`, u.Id)
     if err := profileRow.Scan(&u.Firstname, &u.Lastname, &u.Email, &town, &postal, &lat, &lon, &phone, &picture, &u.Joined); err != nil{
         log.Printf("error scaning the row: %s", err)
         return errors.New("error scanning user profile")
@@ -165,7 +176,7 @@ func getNavbarInfo(conn *sql.Conn, u UserClaim)CacheNavbar{
 		}
 
 	}
-	user := conn.QueryRowContext(context.Background(), `SELECT firstname || ' ' || lastname, email FROM users WHERE id=$1`, u.Id)
+	user := conn.QueryRowContext(context.Background(), `SELECT firstname || ' ' || COALESCE(lastname, ''), email FROM users WHERE id=$1`, u.Id)
 	if err := user.Scan(&navigationCache.Name, &navigationCache.Email); err != nil{
 		log.Printf("error getting navbar user info: %s", err)
 	}

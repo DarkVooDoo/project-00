@@ -13,7 +13,6 @@ import (
 type UserClaim struct{
     Id int64 `json:"id,string"`
     ShortName string `json:"short_name"`
-    Picture string `json:"picture"`
     Etablishment int64
     Employee int64
     jwt.RegisteredClaims
@@ -43,11 +42,10 @@ const (
     ACCESS_TOKEN_EXPIRE = time.Hour * 24 * 3
 )
 
-func CreateAccessToken(id int64, shortname string, picture string, etablishment int64, employee int64, w http.ResponseWriter) error{
+func CreateAccessToken(id int64, shortname string, etablishment int64, employee int64, w http.ResponseWriter) error{
     claim := UserClaim{
         id,
         shortname,
-        picture,
         etablishment,
         employee,
         jwt.RegisteredClaims{
@@ -83,7 +81,7 @@ func (u *UserClaim)VerifyAccessToken(token string, w http.ResponseWriter)error{
         return errors.New("error parsing token")
     }else if _, ok := tk.Claims.(*UserClaim); ok {
         if time.Until(u.ExpiresAt.Time).Minutes() < 60{
-            if err := CreateAccessToken(u.Id, u.ShortName, u.Picture, u.Etablishment, u.Employee, w); err != nil{
+            if err := CreateAccessToken(u.Id, u.ShortName, u.Etablishment, u.Employee, w); err != nil{
                 log.Print("error recreating the token")
             }
         }

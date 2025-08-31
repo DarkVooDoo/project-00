@@ -56,7 +56,7 @@ func (me MyEtablishmentRoute) Get(w http.ResponseWriter, r *http.Request){
 
     etablishment.UserEtablishment(conn)
     me.Etablishment = etablishment
-	if err := model.CreateAccessToken(me.User.Id, me.User.ShortName, me.User.Picture, me.User.Etablishment, me.User.Employee, w); err != nil{
+	if err := model.CreateAccessToken(me.User.Id, me.User.ShortName, me.User.Etablishment, me.User.Employee, w); err != nil{
 		log.Printf("Error creating the token; %s", err)
 		return
 	}

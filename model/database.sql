@@ -82,9 +82,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE FUNCTION SignUser(userEmail VARCHAR) RETURNS TABLE (id BIGINT, shortname TEXT, picture TEXT, employee BIGINT, etablishment BIGINT, salt INT, password TEXT) AS $$
+CREATE FUNCTION CreateGoogleAccountOrSignin(u_email TEXT, u_name TEXT) RETURNS 
+TABLE (userId BIGINT, userEmail VARCHAR(70), shortName TEXT, employeeId BIGINT, etablishmentId BIGINT) LANGUAGE PLPGSQL AS $$
+DECLARE
 BEGIN
-    RETURN QUERY SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COALESCE(u.picture, ''), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0), 
+    IF NOT EXISTS(SELECT 1 FROM users WHERE email=u_email) THEN
+        RETURN QUERY INSERT INTO users(email, firstname, is_google) VALUES(u_email, u_name, true) RETURNING id, email, CONCAT(LEFT(firstname, 1), LEFT(lastname, 1)), 0::BIGINT, 0::BIGINT;
+    ELSE
+        RETURN QUERY SELECT u.id, u.email, CONCAT(LEFT(u.firstname, 1), LEFT(u.lastname, 1)), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0),
+        COALESCE((SELECT et.id FROM  etablishment AS et WHERE et.user_id=u.id LIMIT 1), 0) FROM users AS u WHERE u.email=u_email;
+    END IF;
+END;
+$$;
+
+CREATE FUNCTION SignUser(userEmail VARCHAR) RETURNS TABLE (id BIGINT, shortname TEXT, employee BIGINT, etablishment BIGINT, salt INT, password TEXT) AS $$
+BEGIN
+    RETURN QUERY SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0), 
     COALESCE((SELECT et.id FROM  etablishment AS et WHERE et.user_id=u.id LIMIT 1), 0), u.salt, u.password FROM users AS u WHERE u.email=userEmail AND u.confirmed=true;
 END;
 $$ LANGUAGE plpgsql;
@@ -92,15 +105,17 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     firstname VARCHAR(40) NOT NULL,
-    lastname VARCHAR(40) NOT NULL,
-    password TEXT NOT NULL,
+    lastname VARCHAR(40),
+    password TEXT,
     phone VARCHAR,
     town VARCHAR,
     postal VARCHAR(6),
     geolocation POINT,
     email VARCHAR(70) UNIQUE NOT NULL,
     picture TEXT,
-    salt INT NOT NULL,
+    salt INT,
+    refresh_token TEXT,
+    is_google BOOL DEFAULT false,
     confirmed BOOL DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW(),
     ispremium BOOL DEFAULT false
