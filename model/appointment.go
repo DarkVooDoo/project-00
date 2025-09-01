@@ -133,7 +133,7 @@ func (a *Appointment) EmployeePlanning(conn *sql.Conn)(planningList []Appointmen
 		), pos AS(
 		  SELECT *,
 		  ((startMinute - scheduleBase) / 60 ) * 100 AS pos, 
-		  ((endMinute - startMinute) / 60) * 100 - 5 AS height
+		  ((endMinute - startMinute)::FLOAT / 60 ) * 100 - 5 AS height
 		  FROM calc_minute
 		)
 		SELECT a_id, fullname, phone, fulldate, et_id, total, status, pos, height FROM pos`, a.EmployeeId, a.Date, shift[0])
@@ -194,7 +194,7 @@ func (a *Appointment) Create()error{
 
 	if a.CustomerName != ""{
 		appointmentRow := tx.QueryRow(`INSERT INTO appointment("date", status, name, phone, etablishment_id, employee_id) 
-		VALUES(TSRANGE($1::TIMESTAMP, $1::TIMESTAMP + $2::INTERVAL),$3,$4,$5,$6,$7,$8) RETURNING id`, 
+		VALUES(TSRANGE($1::TIMESTAMP, $1::TIMESTAMP + $2::INTERVAL),$3,$4,$5,$6,$7) RETURNING id`, 
 		a.Date, fmt.Sprintf("%d minute", totalDuration), "Confirmé", a.CustomerName, a.Contact, a.EtablishmentId, a.EmployeeId)
 		if err = appointmentRow.Scan(&a.Id); err != nil{
 			log.Printf("error scanning appointment: %s", err)
@@ -405,15 +405,18 @@ func (a *Appointment) EtablishmentTodayAppointments(conn *sql.Conn)[]Appointment
 func (a Appointment) EtablishmentAppointments(conn *sql.Conn)(ewa []EmployeeWithAppointment){
 	employee := Employe{EtablishmentId: a.EtablishmentId}
 
+	var appointmentTotal, total float64
 	date := a.Date
 	var appointmentList []Appointment
 	employeeList := employee.AppointmentEmployee(conn, date, a.Status)
 
 	for _, v := range employeeList{
+		total = 0
 		appointmentList = []Appointment{}
     	aList, err := conn.QueryContext(context.Background(), `SELECT a.id, COALESCE(a.name, u.firstname || ' ' || u.lastname), et.adresse || ', ' || et.postal, c.name,
     	TO_CHAR(LOWER(a.date), 'TMDay DD TMMonth à HH24:MI'), a.status,
-    	(SELECT array_agg(s.name) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)
+    	(SELECT array_agg(s.name) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id),
+		(SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)::DECIMAL
     	FROM appointment AS a LEFT JOIN etablishment AS et ON et.id=a.etablishment_id LEFT JOIN category AS c ON c.id=et.category_id
 		LEFT JOIN users AS u ON u.id=a.user_id WHERE a.etablishment_id=$1 AND LOWER(a.date)::DATE = $2 AND
 		CASE $3
@@ -428,11 +431,14 @@ func (a Appointment) EtablishmentAppointments(conn *sql.Conn)(ewa []EmployeeWith
     	    return
     	}
     	for aList.Next(){
-    	    if err = aList.Scan(&a.Id, &a.CustomerName, &a.Adresse, &a.Category, &a.Date, &a.Status, pq.Array(&a.ServiceList)); err != nil{
+    	    if err = aList.Scan(&a.Id, &a.CustomerName, &a.Adresse, &a.Category, &a.Date, &a.Status, pq.Array(&a.ServiceList), &appointmentTotal); err != nil{
     	        log.Printf("error scanning the columns: %s", err)
     	    }
+			a.Price = fmt.Sprintf("%.2f £", appointmentTotal)
+			total += appointmentTotal
     	    appointmentList = append(appointmentList, a)
     	}
+		v.TotalMoney = fmt.Sprintf("%.2f £", total)
 		ewa = append(ewa, EmployeeWithAppointment{
 			v,
 			appointmentList,

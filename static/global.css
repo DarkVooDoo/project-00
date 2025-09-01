@@ -557,7 +557,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 input:focus, textarea:focus, select:focus{
-    outline-color: var(--primary-color) !important;
+    outline-color: #2624f3 !important;
     box-shadow: 0 0 2px 2px rgb(38 36 243 / 65%);
 }
 /* width */

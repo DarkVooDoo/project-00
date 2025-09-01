@@ -21,7 +21,7 @@ $$;
 
 CREATE FUNCTION send_review_request() RETURNS TRIGGER LANGUAGE PLPGSQL AS $$
 BEGIN
-  IF NEW.status = 'Terminé' AND NEW.status != OLD.status THEN
+  IF NEW.status = 'Terminé' AND NEW.status != OLD.status AND NEW.user_id IS NOT NULL THEN
     INSERT INTO review (appointment_id, etablishment_id, user_id, employee_id) VALUES(NEW.id, NEW.etablishment_id, NEW.user_id, NEW.employee_id);
   END IF;
   RETURN NEW;
@@ -95,13 +95,6 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION SignUser(userEmail VARCHAR) RETURNS TABLE (id BIGINT, shortname TEXT, employee BIGINT, etablishment BIGINT, salt INT, password TEXT) AS $$
-BEGIN
-    RETURN QUERY SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0), 
-    COALESCE((SELECT et.id FROM  etablishment AS et WHERE et.user_id=u.id LIMIT 1), 0), u.salt, u.password FROM users AS u WHERE u.email=userEmail AND u.confirmed=true;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     firstname VARCHAR(40) NOT NULL,
@@ -144,8 +137,7 @@ CREATE TABLE etablishment (
     category_id INT REFERENCES category(id)
 );
 
-CREATE TRIGGER user_max_etablishment
-BEFORE INSERT ON etablishment FOR EACH ROW EXECUTE FUNCTION max_etablishment();
+CREATE TRIGGER user_max_etablishment BEFORE INSERT ON etablishment FOR EACH ROW EXECUTE FUNCTION max_etablishment();
 
 CREATE TABLE schedule(
     id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -155,8 +147,6 @@ CREATE TABLE schedule(
     etablishment_id BIGINT REFERENCES etablishment(id),
     EXCLUDE USING BTREE(day WITH =, etablishment_id WITH =)
 );
-
-CREATE INDEX idx_name ON etablishment(name);
 
 CREATE TABLE service (
     id BIGSERIAL PRIMARY KEY,

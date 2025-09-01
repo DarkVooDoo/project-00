@@ -94,17 +94,15 @@
                 <div id="perf-container">
                 {{range .TopEmployee}}
                     <div class="employee-perf">
-                        {{with .Picture}}
-                            <img src="{{.Picture}}" />
-                        {{else}}
-                            <div class="preview">{{.ShortName}}</div>
-                        {{end}}
+                    <div class="preview">{{.ShortName}}</div>
                         <div class="content">
                             <h3 class="name">{{.Name}}</h3>
                             <span class="title">Barber</span>
                         </div>
                         <div class="numbers">{{.TotalClient}} Clients</div>
                     </div>
+                {{else}}
+                    <h3 class="no-data">Aucune performance disponible pour le moment.</h3>
                 {{end}}
                 </div>
               </section>

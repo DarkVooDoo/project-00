@@ -173,6 +173,7 @@
             }
             .no-data{
                 text-align: center;
+                font-size: 1.2rem;
                 .icon{
                     height: 3rem;
                 }

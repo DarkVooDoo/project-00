@@ -96,9 +96,11 @@ func (e *Employe) GetEtablishmentEmployees(conn *sql.Conn)[]Employe{
 }
 
 func (e Employe) AppointmentEmployee(conn *sql.Conn, date string, status string)[]Employe{
+	//TODO: Get Total money make by employee -> TotalMoney
 	var employeeList []Employe
-	employeeRow, err := conn.QueryContext(context.Background(), `SELECT e.id, u.firstname || ' ' || u.lastname, LEFT(u.firstname, 1) || LEFT(u.lastname, 1),
-	COUNT(a.id), SUM(COALESCE(a.total, '0')) FROM employee AS e LEFT JOIN users AS u ON u.id=e.user_id LEFT JOIN appointment AS a ON a.employee_id=e.id AND LOWER(a.date)::DATE = $2 
+	// (SELECT SUM(s.price) FROM appointment_service AS az LEFT JOIN service AS s ON s.id=az.service_id WHERE az.appointment_id=a.id)  
+	employeeRow, err := conn.QueryContext(context.Background(), `SELECT e.id, u.firstname || ' ' || u.lastname, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COUNT(a.id)
+	FROM employee AS e LEFT JOIN users AS u ON u.id=e.user_id LEFT JOIN appointment AS a ON a.employee_id=e.id AND LOWER(a.date)::DATE = $2 
 	AND CASE $3
 		WHEN 'Confirmé' THEN a.status = 'Confirmé'
 		WHEN 'Terminé' THEN a.status = 'Terminé'
@@ -111,7 +113,7 @@ func (e Employe) AppointmentEmployee(conn *sql.Conn, date string, status string)
 		return employeeList
 	}
 	for employeeRow.Next(){
-		if err := employeeRow.Scan(&e.Id, &e.Name, &e.ShortName, &e.TotalClient, &e.TotalMoney); err != nil{
+		if err := employeeRow.Scan(&e.Id, &e.Name, &e.ShortName, &e.TotalClient); err != nil{
 			log.Printf("error scanning the employee table: %s", err)
 			continue
 		}

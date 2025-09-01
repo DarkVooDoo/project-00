@@ -111,11 +111,11 @@ func (u *User) Modify()error{
 }
 
 func (u *User) Sign(email string, password string)(error){
-
     conn := GetDBPoolConn()
     defer conn.Close()
-    userRow := conn.QueryRowContext(context.Background(), `SELECT * FROM SignUser($1)`, email)
-    if err := userRow.Scan(&u.Id, &u.ShortName, &u.Picture, &u.EmployeeId, &u.EtablishmentId, &u.Salt, &u.Password); err != nil{
+    userRow := conn.QueryRowContext(context.Background(), `SELECT u.id, LEFT(u.firstname, 1) || LEFT(u.lastname, 1), COALESCE((SELECT e.id FROM employee AS e WHERE e.user_id=u.id LIMIT 1), 0), 
+    COALESCE((SELECT et.id FROM  etablishment AS et WHERE et.user_id=u.id LIMIT 1), 0), u.salt, u.password FROM users AS u WHERE u.email=$1 AND u.confirmed=true;`, email)
+    if err := userRow.Scan(&u.Id, &u.ShortName, &u.EmployeeId, &u.EtablishmentId, &u.Salt, &u.Password); err != nil{
         log.Printf("error scanning user: %s", err)
         return errors.New("error selecting user")
     }

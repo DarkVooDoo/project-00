@@ -30,7 +30,6 @@
               </div>
               
               <div class="appointment-list" id="appointment-list">
-                <!-- Rendez-vous à venir (cancelled)-->
                   {{range .Appointment}}
                       <div class="appointment-card" data-status="confirmed" data-date="2023-04-20">
                           <div class="appointment-header">
@@ -101,9 +100,8 @@
                           </div>
                       </div>
                   {{else}}
-                      <!-- État vide (caché par défaut) -->
                       <div class="empty-state" id="empty-state">
-                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                           <line x1="16" y1="2" x2="16" y2="6"></line>
                           <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -114,7 +112,6 @@
                       </div>
                   {{end}}
               
-              <!-- Pagination -->
               <div class="pagination" hx-boost="true">
                 <button class="page-btn disabled">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
